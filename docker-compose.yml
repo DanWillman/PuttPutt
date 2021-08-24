@@ -1,5 +1,17 @@
 version: '3'
 services:
+  golf_mongo:
+    image: mongo
+    container_name: golf_mongo
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - ./mongo/database/dm_bot:/data/db
+    ports:
+      - 27017:27017
+    restart: unless-stopped
   puttputt:
     build:
       context: .
