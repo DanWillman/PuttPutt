@@ -32,7 +32,7 @@ namespace PuttPutt.Commands
                 {
                     var scoreInfo = mongo.GetParticipantInfo(member, ctx.Guild);
                     var scoreMatch = Regex.Match(member.Nickname, SCORE_MATCH);
-                    int score = int.Parse(scoreMatch.Value);
+                    int score = int.Parse(scoreMatch.Value.Substring(1, scoreMatch.Value.Length - 2));
 
                     scoreInfo.Score += score;
                     mongo.UpsertParticipant(scoreInfo);
