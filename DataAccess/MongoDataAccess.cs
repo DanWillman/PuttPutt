@@ -13,7 +13,7 @@ namespace PuttPutt.DataAccess
     public class MongoDataAccess
     {
         private readonly string CollectionName = "scores";
-        private readonly string ConnectionString = "mongodb://golf_mongo:27017";
+        private readonly string ConnectionString = "mongodb://golf_mongo:27018";
         private readonly string DatabaseName = "shame_golf";
 
         private readonly IMongoCollection<Participant> collection;
