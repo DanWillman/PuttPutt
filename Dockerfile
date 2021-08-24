@@ -10,4 +10,4 @@ RUN dotnet publish -c Release -o publishdir
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
 WORKDIR /app
 COPY --from=build /app/publishdir .
-ENTRYPOINT ["dotnet", "puttputt.dll"]
+ENTRYPOINT ["dotnet", "PuttPutt.dll"]
