@@ -2,6 +2,7 @@
 using System.Linq;
 using DSharpPlus.Entities;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using PuttPutt.Models;
 
@@ -13,7 +14,7 @@ namespace PuttPutt.DataAccess
     public class MongoDataAccess
     {
         private readonly string CollectionName = "scores";
-        private readonly string ConnectionString = "mongodb://golf_mongo:27018";
+        private readonly string ConnectionString = "mongodb://192.168.1.69:27018";
         private readonly string DatabaseName = "shame_golf";
 
         private readonly IMongoCollection<Participant> collection;
@@ -24,13 +25,13 @@ namespace PuttPutt.DataAccess
             var database = client.GetDatabase(DatabaseName);
 
             collection = database.GetCollection<Participant>(CollectionName);
-            collection.Indexes.CreateOne(new CreateIndexModel<Participant>(Builders<Participant>.IndexKeys.Ascending(x => x.User.Username)));
+            collection.Indexes.CreateOne(new CreateIndexModel<Participant>(Builders<Participant>.IndexKeys.Ascending(x => x.UserId)));
         }
 
         /// <summary>
         /// Returns an unsorted list of all particpant entries for a specified server
         /// </summary>
-        public List<Participant> GetParticipants(DiscordGuild server) => collection.Find(x => x.Server.Id == server.Id).ToList();
+        public List<Participant> GetParticipants(DiscordGuild server) => collection.Find(x => x.ServerId == server.Id).ToList();
 
         /// <summary>
         /// Get participant info for a specified user/server combination
@@ -39,7 +40,7 @@ namespace PuttPutt.DataAccess
         /// <param name="server">DiscordGuild (server) tied to record</param>
         /// <returns></returns>
         public Participant GetParticipantInfo(DiscordUser user, DiscordGuild server) =>
-            collection.Find(x => x.User.Id == user.Id && x.Server.Id == server.Id).FirstOrDefault();
+            collection.Find(x => x.UserId == user.Id && x.ServerId == server.Id).FirstOrDefault();
 
         /// <summary>
         /// Updates the participant info, inserting if missing.
@@ -53,7 +54,7 @@ namespace PuttPutt.DataAccess
                 participant.Id = ObjectId.GenerateNewId().ToString();
             }
 
-            collection.ReplaceOne(x => x.User.Id == participant.User.Id && x.Server.Id == participant.Server.Id, participant, new ReplaceOptions() { IsUpsert = true });
+            collection.ReplaceOne(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId, participant, new ReplaceOptions() { IsUpsert = true });
 
             return GetParticipantInfo(participant);
         }
@@ -62,6 +63,6 @@ namespace PuttPutt.DataAccess
         /// Helper method fetches participant by object
         /// </summary>
         private Participant GetParticipantInfo(Participant participant) =>
-            collection.Find(x => x.User.Id == participant.User.Id && x.Server.Id == participant.Server.Id).FirstOrDefault();
+            collection.Find(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId).FirstOrDefault();
     }
 }

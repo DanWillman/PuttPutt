@@ -17,18 +17,21 @@ namespace PuttPutt.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// Discord user tied to this record
+        /// DiscordUser Id of particpant
         /// </summary>
-        public DiscordUser User { get; set; }
-        
+        public ulong UserId { get; set; }
+
         /// <summary>
-        /// Discord server record is generated for
+        /// DiscordGuild id record is part of
         /// </summary>
-        public DiscordGuild Server { get; set; }
+        public ulong ServerId { get; set; }
         
         /// <summary>
         /// Current score
         /// </summary>
         public int Score { get; set; }
+
+        [BsonExtraElements]
+        private BsonDocument CatchAll { get; set; }
     }
 }
