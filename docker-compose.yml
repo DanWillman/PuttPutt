@@ -1,0 +1,25 @@
+version: '3'
+services:
+  golf_mongo:
+    image: mongo
+    container_name: golf_mongo
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    volumes:
+      - /mnt/nvme/mongo/database/puttputt:/data/db
+    ports:
+      - 27018:27017
+    restart: unless-stopped
+  puttputt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: puttputt/latest
+    container_name: puttputt
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    restart: unless-stopped
