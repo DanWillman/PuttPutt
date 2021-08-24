@@ -1,0 +1,13 @@
+version: '3'
+services:
+  puttputt:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: puttputt/latest
+    container_name: puttputt
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    restart: unless-stopped
