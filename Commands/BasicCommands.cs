@@ -1,7 +1,4 @@
-using System;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -34,7 +31,13 @@ namespace PuttPutt.Commands
             }
         }
 
-            await ctx.RespondAsync(sb.ToString());
+        [Command("myscore")]
+        [Description("Reports calling user's current score")]
+        public async Task ReportScore(CommandContext ctx)
+        {
+            var result = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+
+            await ctx.RespondAsync($"Looks like you're sitting at {result.Score}, {ctx.User.Mention}");
         }
 
         [Command("fore")]
