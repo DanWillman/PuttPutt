@@ -9,6 +9,7 @@ namespace PuttPutt.Utilities
     public static class MessageFormatter
     {
         private const string LINE_BREAK = "----------------------------------------";
+        private const int CHARACTER_LIMIT = 2000;
 
         /// <summary>
         /// Formats the golfer scoreboard to a better discord message. With columns and everything!
@@ -20,7 +21,10 @@ namespace PuttPutt.Utilities
             List<string> messages = new List<string>();
             AddToDiscordMessages(messages, $"{headerEmoji}Scoreboard results!{headerEmoji}");
             
-            AddToDiscordMessages(messages, GetGolferResultsSection(results), true);
+            foreach(var section in GetGolferResultsSections(results))
+            {
+                AddToDiscordMessages(messages, section, true);
+            }            
 
             return messages;
         }
@@ -28,19 +32,27 @@ namespace PuttPutt.Utilities
         /// <summary>
         /// Helpfully formats scoreboard into a single string
         /// </summary>
-        private static string GetGolferResultsSection(List<Participant> results)
+        private static List<string> GetGolferResultsSections(List<Participant> golfers)
         {
+            List<string> results = new List<string>();
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine($"{PadToMaxWidth("Golfer", "Score")}");
             sb.AppendLine($"{LINE_BREAK}");
 
-            foreach (var result in results)
+            foreach (var golfer in golfers)
             {
-                sb.AppendLine($"{PadToMaxWidth(result.DisplayName, result.Score.ToString())}");
+                if (sb.Length + golfer.DisplayName.Length >= CHARACTER_LIMIT - 100)
+                {
+                    results.Add(sb.ToString());
+                    sb.Clear();
+                }
+                sb.AppendLine($"{PadToMaxWidth(golfer.DisplayName, golfer.Score.ToString())}");
             }
 
-            return sb.ToString();
+            results.Add(sb.ToString());
+
+            return results;
         }
 
         /// <summary>
@@ -67,8 +79,7 @@ namespace PuttPutt.Utilities
         /// <param name="addition">New string being added</param>
         /// <param name="codeBlock">Whether or not to wrap the addition string in codeblock markdown</param>
         private static void AddToDiscordMessages(List<string> messages, string addition, bool codeBlock = false)
-        {
-            const int discordCharacterLimit = 2000;
+        {            
             if (codeBlock)
             {
                 addition = $"```{addition}```";
@@ -81,7 +92,7 @@ namespace PuttPutt.Utilities
             }
             else
             {
-                if (messages[^1].Length + addition.Length > discordCharacterLimit)
+                if (messages[^1].Length + addition.Length > CHARACTER_LIMIT)
                 {
                     messages.Add(addition);
                 }
