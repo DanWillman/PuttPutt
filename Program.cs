@@ -55,6 +55,7 @@ namespace PuttPutt
             commands.CommandErrored += Commands_CommandErrored;
 
             commands.RegisterCommands<BasicCommands>();
+            commands.RegisterCommands<AdminCommands>();
 
             await client.ConnectAsync();
             while (!cts.IsCancellationRequested)

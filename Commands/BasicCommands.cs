@@ -14,65 +14,6 @@ namespace PuttPutt.Commands
     public class BasicCommands : BaseCommandModule
     {
         private MongoDataAccess mongo = new MongoDataAccess();
-        private const string SCORE_MATCH = @"\[[+-]*(\d)+\]";
-
-        [Command("sync")]
-        [Description("Modz only. Sync current user nicknames to the database. Overwrites any scores modified with !fore")]
-        [RequireRoles(RoleCheckMode.Any, new string[] {"modz", "Queen of Hell"})]
-        public async Task SyncScores(CommandContext ctx)
-        {
-            var members = await ctx.Guild.GetAllMembersAsync();
-            int success = 0;
-            int fail = 0;
-
-            Console.WriteLine($"Attempting to sync {members.Count} participants");
-
-            foreach(var member in members)
-            {
-                try
-                {
-                    if (!Regex.IsMatch(member.DisplayName, SCORE_MATCH))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Scoring {member.DisplayName}");
-                    }
-
-                    var scoreMatch = Regex.Match(member.DisplayName, SCORE_MATCH);
-                    int score = int.Parse(scoreMatch.Value.Substring(1, scoreMatch.Value.Length - 2));
-
-                    var scoreInfo = mongo.GetParticipantInfo(member, ctx.Guild);
-
-                    if (scoreInfo == null)
-                    {
-                        scoreInfo = new Participant()
-                        {
-                            ServerId = ctx.Guild.Id,
-                            UserId = member.Id
-                        };
-                    }
-
-                    scoreInfo.Score = score;
-                    mongo.UpsertParticipant(scoreInfo);
-                    success++;
-                }
-                catch (ArgumentNullException)
-                {
-                    fail++;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to update score! {member.DisplayName} - {ex.GetType()}|{ex.Message}");
-                    fail++;
-                }
-            }
-
-            Console.WriteLine($"Finished syncing. {members.Count} total, {success} succeeded, {fail} failed");
-            await ctx.RespondAsync($"All done, I updated {success} member{(success > 1 ? "s": "")}");
-        }
-
         [Command("scoreboard")]
         [Description("Displays the current scoreboard. Optionally can limit results. Example: `!scoreboard` or `!scoreboard 5`")]
         public async Task ReportScoreboard(CommandContext ctx, int limit = -1)
