@@ -7,16 +7,17 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using PuttPutt.DataAccess;
-using PuttPutt.Models;
+using PuttPutt.Utilities;
 
 namespace PuttPutt.Commands
 {
     public class BasicCommands : BaseCommandModule
     {
         private MongoDataAccess mongo = new MongoDataAccess();
+
         [Command("scoreboard")]
         [Description("Displays the current scoreboard. Optionally can limit results. Example: `!scoreboard` or `!scoreboard 5`")]
-        public async Task ReportScoreboard(CommandContext ctx, int limit = -1)
+        public async Task ReportScoreboardTest(CommandContext ctx, int limit = -1)
         {
             var results = mongo.GetParticipants(ctx.Guild).OrderBy(p => p.Score).ToList();
 
@@ -25,14 +26,13 @@ namespace PuttPutt.Commands
                 results = results.GetRange(0, limit);
             }
 
-            StringBuilder sb = new StringBuilder($"Current Scores!{Environment.NewLine}");
+            var golferEmoji = DiscordEmoji.FromName(ctx.Client, ":golfer:");
 
-            foreach (var res in results)
+            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, golferEmoji))
             {
-                var user = await ctx.Guild.GetMemberAsync(res.UserId);
-                var displayName = user.DisplayName.Substring(0, user.DisplayName.IndexOf("["));
-                sb.AppendLine($"{displayName.PadRight(15)} {res.Score}");
+                await ctx.RespondAsync(message);
             }
+        }
 
             await ctx.RespondAsync(sb.ToString());
         }
