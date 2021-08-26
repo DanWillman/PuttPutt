@@ -12,7 +12,7 @@ namespace PuttPutt.Commands
     class AdminCommands : BaseCommandModule
     {
         private MongoDataAccess mongo = new MongoDataAccess();
-        private const string SCORE_MATCH = @"\[[+-]*(\d)+\]";
+        private const string SCORE_MATCH = @"(\[|\{)[+-]*(\d)+(\]|\})";
 
         [Command("sync")]
         [Description("Modz only. Sync current user nicknames to the database. Overwrites any scores modified with !fore")]        
