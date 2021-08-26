@@ -14,7 +14,7 @@ namespace PuttPutt.Commands
 
         [Command("scoreboard")]
         [Description("Displays the current scoreboard. Optionally can limit results. Example: `!scoreboard` or `!scoreboard 5`")]
-        public async Task ReportScoreboardTest(CommandContext ctx, int limit = -1)
+        public async Task ReportScoreboard(CommandContext ctx, int limit = -1)
         {
             var results = mongo.GetParticipants(ctx.Guild).OrderBy(p => p.Score).ToList();
 
