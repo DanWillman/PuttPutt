@@ -1,5 +1,4 @@
-﻿using DSharpPlus.Entities;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace PuttPutt.Models
@@ -20,6 +19,11 @@ namespace PuttPutt.Models
         /// DiscordUser Id of particpant
         /// </summary>
         public ulong UserId { get; set; }
+
+        /// <summary>
+        /// Display name of golfer
+        /// </summary>
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// DiscordGuild id record is part of

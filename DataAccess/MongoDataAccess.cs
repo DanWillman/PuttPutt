@@ -2,7 +2,6 @@
 using System.Linq;
 using DSharpPlus.Entities;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using PuttPutt.Models;
 
