@@ -4,6 +4,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using PuttPutt.DataAccess;
+using PuttPutt.Models;
 using PuttPutt.Utilities;
 
 namespace PuttPutt.Commands
@@ -46,12 +47,29 @@ namespace PuttPutt.Commands
             [Description("Amount to modify current score")]int modifier)
         {
             var data = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+            var response = "";
+
+            if (data == null)
+            {
+                data = new Participant()
+                {
+                    ServerId = ctx.Guild.Id,
+                    UserId = ctx.Member.Id,
+                    DisplayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName),
+                    Score = UsernameUtilities.GetScore(ctx.Member.DisplayName)
+                };
+
+                response = $"I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
+            }
+
             int originalScore = data.Score;
             data.Score += modifier;
 
             var updatedData = mongo.UpsertParticipant(data);
 
-            await ctx.RespondAsync($"Ok, I've updated your score from {originalScore} to {updatedData.Score}, {ctx.User.Mention}");
+            response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
+
+            await ctx.RespondAsync(response);
         }
     }
 }
