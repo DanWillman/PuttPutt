@@ -61,5 +61,50 @@ namespace PuttPutt.Commands
             Console.WriteLine($"Finished syncing. {members.Count} total, {success} succeeded, {fail} failed");
             await ctx.RespondAsync($"All done, I updated {success} member{(success > 1 ? "s" : "")}");
         }
+
+        [Command("season")]
+        [Description("Modz only. Ends the current season, archiving the current scoreboard and begins anew.")]
+        public async Task StartSeasonAsync(CommandContext ctx,
+            [Description("Optional. Archival name for current season.")] string archiveName = "")
+        {
+            archiveName = string.IsNullOrWhiteSpace(archiveName) ? DateTime.UtcNow.ToString() : archiveName; //Use current timestamp if not provided an archive name
+            mongo.ArchiveSeason(ctx.Guild, archiveName);
+
+            await ctx.RespondAsync($"I've finished archiving the season! Reach out to Dan if you have some changes to make still due to your timezone");
+
+            var members = await ctx.Guild.GetAllMembersAsync();
+            int success = 0;
+            int fail = 0;
+
+            Console.WriteLine($"Attempting to add {members.Count} participants");
+
+            foreach (var member in members)
+            {
+                try
+                {
+                    var scoreInfo = new Participant()
+                    {
+                        ServerId = ctx.Guild.Id,
+                        UserId = member.Id,
+                        DisplayName = UsernameUtilities.SanitizeUsername(member.DisplayName),
+                        Score = 0
+                    };
+
+                    mongo.UpsertParticipant(scoreInfo);
+                    success++;
+                }
+                catch (ArgumentNullException)
+                {
+                    fail++;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to update score! {member.DisplayName} - {ex.GetType()}|{ex.Message}");
+                    fail++;
+                }
+            }
+
+            await ctx.RespondAsync($"All done, I created {success} new member{(success > 1 ? "s" : "")} for the season. Good luck with the new season!");
+        }
     }
 }
