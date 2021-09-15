@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using MongoDB.Bson;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
 using PuttPutt.Utilities;
@@ -41,7 +44,24 @@ namespace PuttPutt.Commands
             await ctx.RespondAsync($"Looks like you're sitting at {result.Score}, {ctx.User.Mention}");
         }
 
-        [Command("fore")]
+        [Command("history")]
+        [Description("Reports calling user's score history. Optionally can limit results. Example: `!history` or `!history 5`")]
+        public async Task ReportHistory(CommandContext ctx, int limit = -1)
+        {
+            var events = mongo.GetParticipantInfo(ctx.User, ctx.Guild).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
+
+            if (limit != -1 && events.Count > limit)
+            {
+                events = events.GetRange(0, limit);
+            }
+
+            foreach (string message in MessageFormatter.FormatHistoryToDiscordMessage(events))
+            {
+                await ctx.RespondAsync(message);
+            }
+        }
+
+        [Command("fore-test")]
         [Description("Updates a users score. Example use: `!fore -5` or `!fore 5`")]
         public async Task UpdateUserScore(CommandContext ctx, 
             [Description("Amount to modify current score")]int modifier)
@@ -56,11 +76,25 @@ namespace PuttPutt.Commands
                     ServerId = ctx.Guild.Id,
                     UserId = ctx.Member.Id,
                     DisplayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName),
-                    Score = UsernameUtilities.GetScore(ctx.Member.DisplayName)
+                    Score = UsernameUtilities.GetScore(ctx.Member.DisplayName),
+                    EventHistory = new List<Event>()
                 };
 
                 response = $"I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
             }
+            else if (data.EventHistory == null)
+            {
+                data.EventHistory = new List<Event>();
+            }
+
+            data.EventHistory.Add(new Event()
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                EventTimeUTC = DateTime.UtcNow,
+                ScoreModifier = modifier,
+                PriorScore = data.Score,
+                ScoreSnapshot = data.Score + modifier
+            });
 
             int originalScore = data.Score;
             data.Score += modifier;

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 
 namespace PuttPutt.Models
 {
@@ -34,6 +35,11 @@ namespace PuttPutt.Models
         /// Current score
         /// </summary>
         public int Score { get; set; }
+
+        /// <summary>
+        /// List of events representing changes to a user's standing
+        /// </summary>
+        public List<Event> EventHistory { get; set; }
 
         [BsonExtraElements]
         private BsonDocument CatchAll { get; set; }

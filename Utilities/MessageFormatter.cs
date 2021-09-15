@@ -2,6 +2,7 @@
 using PuttPutt.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PuttPutt.Utilities
@@ -30,6 +31,24 @@ namespace PuttPutt.Utilities
         }
 
         /// <summary>
+        /// Formats the golfers event history into a better discord message
+        /// </summary>
+        /// <param name="events"></param>
+        /// <returns></returns>
+        public static List<string> FormatHistoryToDiscordMessage(List<Event> events)
+        {
+            List<string> messages = new();
+            AddToDiscordMessages(messages, "Your history");
+
+            foreach(var section in GetEventResultsSections(events))
+            {
+                AddToDiscordMessages(messages, section, true);
+            }
+
+            return messages;
+        }
+
+        /// <summary>
         /// Helpfully formats scoreboard into a single string
         /// </summary>
         private static List<string> GetGolferResultsSections(List<Participant> golfers)
@@ -48,6 +67,35 @@ namespace PuttPutt.Utilities
                     sb.Clear();
                 }
                 sb.AppendLine($"{PadToMaxWidth(golfer.DisplayName, golfer.Score.ToString())}");
+            }
+
+            results.Add(sb.ToString());
+
+            return results;
+        }
+        
+        /// <summary>
+        /// Helpfully formats historical entries into a scoreboard style display
+        /// </summary>
+        private static List<string> GetEventResultsSections(List<Event> events)
+        {
+            List<string> results = new List<string>();
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"{PadToMaxWidth("Timestamp", "Modification")}");
+            sb.AppendLine($"{LINE_BREAK}");
+
+            var orderedEvents = events.OrderBy(e => e.EventTimeUTC).ToList();
+
+            foreach (var e in orderedEvents)
+            {
+                var timestamp = $"{e.EventTimeUTC.ToShortDateString()} {e.EventTimeUTC.ToShortTimeString()} UTC";
+                if (sb.Length + timestamp.Length >= CHARACTER_LIMIT - 100)
+                {
+                    results.Add(sb.ToString());
+                    sb.Clear();
+                }
+                sb.AppendLine($"{PadToMaxWidth(timestamp, e.ScoreModifier.ToString())}");
             }
 
             results.Add(sb.ToString());
