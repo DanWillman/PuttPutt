@@ -61,7 +61,7 @@ namespace PuttPutt.Commands
             }
         }
 
-        [Command("fore-test")]
+        [Command("fore")]
         [Description("Updates a users score. Example use: `!fore -5` or `!fore 5`")]
         public async Task UpdateUserScore(CommandContext ctx, 
             [Description("Amount to modify current score")]int modifier)
