@@ -16,16 +16,27 @@ namespace PuttPutt.Utilities
         /// Formats the golfer scoreboard to a better discord message. With columns and everything!
         /// </summary>
         /// <param name="results">Scoreboard data to report</param>
-        /// <param name="headerEmoji"></param>
+        /// <param name="headerEmoji">Emoji to wrap header message in chat</param>
         public static List<string> FormatGolfersToDiscordMessage(List<Participant> results, DiscordEmoji headerEmoji)
         {
+            return FormatGolfersToDiscordMessage(results, headerEmoji, "Scoreboard results!");
+        }
+
+        /// <summary>
+        /// Formats the golfer scoreboard to a better discord message. With columns and everything!
+        /// </summary>
+        /// <param name="results">Scoreboard data to report</param>
+        /// <param name="headerEmoji">Emoji to wrap header message in chat</param>
+        /// <param name="headerMessage">Message displayed in chat</param>
+        public static List<string> FormatGolfersToDiscordMessage(List<Participant> results, DiscordEmoji headerEmoji, string headerMessage)
+        {
             List<string> messages = new List<string>();
-            AddToDiscordMessages(messages, $"{headerEmoji}Scoreboard results!{headerEmoji}");
-            
-            foreach(var section in GetGolferResultsSections(results))
+            AddToDiscordMessages(messages, $"{headerEmoji}{headerEmoji}{headerEmoji}");
+
+            foreach (var section in GetGolferResultsSections(results))
             {
                 AddToDiscordMessages(messages, section, true);
-            }            
+            }
 
             return messages;
         }

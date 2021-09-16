@@ -7,7 +7,7 @@ namespace PuttPutt.Models
     /// <summary>
     /// Model holds an archive entry for a golf season. 1 Entry per particpant, per season
     /// </summary>
-    class Archive
+    public class Archive
     {
         /// <summary>
         /// Mongo unique ID for entry

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DSharpPlus.Entities;
 using MongoDB.Bson;
@@ -76,6 +77,14 @@ namespace PuttPutt.DataAccess
         /// <param name="server"></param>
         /// <returns></returns>
         public List<string> GetArchivalNames(DiscordGuild server) => archiveCollection.Find(x => x.ServerId == server.Id).ToList().Select(a => a.ArchiveName).Distinct().ToList();
+
+        /// <summary>
+        /// Gets the archival entry for the specified server and name
+        /// </summary>
+        /// <param name="server"></param>
+        /// <param name="archiveName"></param>
+        /// <returns></returns>
+        public Archive GetArchive(DiscordGuild server, string archiveName) => archiveCollection.Find(x => x.ServerId == server.Id && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
 
         /// <summary>
         /// Moves records from current 

@@ -35,6 +35,28 @@ namespace PuttPutt.Commands
             }
         }
 
+        [Command("archives")]
+        [Description("Gets a list of all archive names, allowing the user to then pull up a scoreboard for that season")]
+        public async Task GetArchives(CommandContext ctx)
+        {
+            var results = mongo.GetArchivalNames(ctx.Guild);
+
+            await ctx.RespondAsync(string.Join(",", results));
+        }
+
+        [Command("seasonscores")]
+        [Description(@"Displays a scoreboard for a previous season. Example: `!seasonscores ""Summer2021""`")]
+        public async Task ReportOldScoreboard(CommandContext ctx, [RemainingText]string archive)
+        {
+            var results = mongo.GetArchive(ctx.Guild, archive).Participant;
+            var golferEmoji = DiscordEmoji.FromName(ctx.Client, ":golfer:");
+
+            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, golferEmoji, $"{archive} results!"))
+            {
+                await ctx.RespondAsync(message);
+            }
+        }
+
         [Command("myscore")]
         [Description("Reports calling user's current score")]
         public async Task ReportScore(CommandContext ctx)
