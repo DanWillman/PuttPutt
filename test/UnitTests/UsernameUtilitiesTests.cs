@@ -12,6 +12,7 @@ namespace UnitTests
         [TestCase("Dan {-52}", "Dan")]
         [TestCase("Dan {52}", "Dan")]
         [TestCase("Dan (-52)", "Dan")]
+        [TestCase("Dan", "Dan")]
         public void SanitizeUsername_HappyPath(string input, string expected)
         {
             var actual = UsernameUtilities.SanitizeUsername(input);

@@ -18,7 +18,11 @@ namespace PuttPutt.Utilities
         public static string SanitizeUsername(string source)
         {
             var scoreMatch = Regex.Match(source, SCORE_MATCH);
-            source = source.Replace(scoreMatch.Value, "");
+
+            if (scoreMatch.Success)
+            {
+                source = source.Replace(scoreMatch.Value, "");                
+            }
             return Regex.Replace(source, @"\s{2,}", " ").Trim();
         }
     }
