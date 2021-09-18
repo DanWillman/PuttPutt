@@ -1,10 +1,10 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace PuttPutt.Utilities
 {
     public static class UsernameUtilities
     {
-        private const string SCORE_MATCH = @"(\[|\{)[+-]*(\d)+(\]|\})";
+        private const string SCORE_MATCH = @"(\[|\{|\()[+-]*(\d)+(\]|\}|\))";
 
         public static int GetScore(string source)
         {
