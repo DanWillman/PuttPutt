@@ -10,11 +10,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests
 		{5D2DBBDF-51CA-4DB2-BB37-E1E937DAFFDD} = {5D2DBBDF-51CA-4DB2-BB37-E1E937DAFFDD}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3B687A9A-8A20-4DBD-B44F-6924087549CC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3D49E9F6-ED7D-4384-BA94-66A61475DE5F}"
 	ProjectSection(SolutionItems) = preProject
-		build\docker-compose.yml = build\docker-compose.yml
-		build\Dockerfile = build\Dockerfile
-		build\spinup.sh = build\spinup.sh
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+		spinup.sh = spinup.sh
 	EndProjectSection
 EndProject
 Global
