@@ -85,24 +85,36 @@ namespace PuttPutt.Commands
 
         [Command("fore")]
         [Description("Updates a users score. Example use: `!fore -5` or `!fore 5`")]
-        public async Task UpdateUserScore(CommandContext ctx, 
-            [Description("Amount to modify current score")]int modifier)
+        public async Task UpdateUserScore(CommandContext ctx,
+            [Description("Amount to modify current score")] int modifier)
         {
             var data = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
             var response = "";
 
             if (data == null)
             {
+                string displayName = string.Empty;
+                int score = 0;
+                try
+                {
+                    displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
+                    score = UsernameUtilities.GetScore(ctx.Member.DisplayName);
+                }
+                catch (Exception ex)
+                {
+                    response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
+                }
+
                 data = new Participant()
                 {
                     ServerId = ctx.Guild.Id,
                     UserId = ctx.Member.Id,
-                    DisplayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName),
-                    Score = UsernameUtilities.GetScore(ctx.Member.DisplayName),
+                    DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
+                    Score = score,
                     EventHistory = new List<Event>()
                 };
 
-                response = $"I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
+                response += $" I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
             }
             else if (data.EventHistory == null)
             {
@@ -125,6 +137,8 @@ namespace PuttPutt.Commands
 
             response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
 
+            await ctx.RespondAsync(response);
+        }
             await ctx.RespondAsync(response);
         }
     }
