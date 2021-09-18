@@ -33,5 +33,18 @@ namespace UnitTests
 
             Assert.AreEqual(expected, actual);
         }
+
+        [TestCase("Dan [-52]", -69, "Dan [-69]")]
+        [TestCase("Dan [52]", 69, "Dan [69]")]
+        [TestCase("Dan (He/Him) [-52]", -69, "Dan (He/Him) [-69]")]
+        [TestCase("Dan {-52}", -69, "Dan {-69}")]
+        [TestCase("Dan {52}", 69, "Dan {69}")]
+        [TestCase("Dan (-52)", -69, "Dan (-69)")]
+        [TestCase("Dan", 69, "Dan")]
+        [Test]
+        public void UpdateUsernameScore_HappyPath(string input, int newScore, string expected)
+        {
+            Assert.AreEqual(expected, UsernameUtilities.UpdateUsernameScore(input, newScore));
+        }
     }
 }
