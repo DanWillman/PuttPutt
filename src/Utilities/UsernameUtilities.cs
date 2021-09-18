@@ -6,6 +6,9 @@ namespace PuttPutt.Utilities
     {
         private const string SCORE_MATCH = @"[\[\{\(][+-]*(\d)+[\]\}\)]";
 
+        /// <summary>
+        /// Parses the raw integer score from the username
+        /// </summary>
         public static int GetScore(string source)
         {
             var scoreMatch = Regex.Match(source, SCORE_MATCH);
