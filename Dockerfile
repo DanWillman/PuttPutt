@@ -4,7 +4,7 @@ WORKDIR /app
 COPY ./src/*.csproj ./
 RUN dotnet restore
 
-COPY .. ./
+COPY . ./
 RUN dotnet publish -c Release -o publishdir
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0
