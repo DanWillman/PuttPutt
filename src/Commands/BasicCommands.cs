@@ -46,7 +46,7 @@ namespace PuttPutt.Commands
 
         [Command("seasonscores")]
         [Description(@"Displays a scoreboard for a previous season. Example: `!seasonscores ""Summer2021""`")]
-        public async Task ReportOldScoreboard(CommandContext ctx, [RemainingText]string archive)
+        public async Task ReportOldScoreboard(CommandContext ctx, [RemainingText] string archive)
         {
             var results = mongo.GetArchive(ctx.Guild, archive).Participant;
             var golferEmoji = DiscordEmoji.FromName(ctx.Client, ":golfer:");
@@ -139,6 +139,35 @@ namespace PuttPutt.Commands
 
             await ctx.RespondAsync(response);
         }
+
+        [Command("setscore")]
+        [Description("Sets a users score. Example use: `!setscore -5` or `!setscore 5`")]
+        public async Task SetUserScore(CommandContext ctx,
+            [Description("New score")] int score)
+        {
+            string response = "";
+            string displayName = string.Empty;
+            try
+            {
+                displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
+            }
+            catch (Exception ex)
+            {
+                response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
+            }
+            var data = new Participant()
+            {
+                ServerId = ctx.Guild.Id,
+                UserId = ctx.Member.Id,
+                DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
+                Score = score,
+                EventHistory = new List<Event>()
+            };
+
+            mongo.UpsertParticipant(data);
+
+            response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've set your score to {data.Score}" : response;
+
             await ctx.RespondAsync(response);
         }
     }
