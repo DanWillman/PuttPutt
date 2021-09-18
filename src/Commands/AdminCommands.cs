@@ -1,4 +1,4 @@
-﻿using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
@@ -15,7 +15,7 @@ namespace PuttPutt.Commands
         private MongoDataAccess mongo = new MongoDataAccess();
 
         [Command("sync")]
-        [Description("Modz only. Sync current user nicknames to the database. Overwrites any scores modified with !fore")]        
+        [Description("Modz only. Sync current user nicknames to the database. Overwrites any scores modified with !fore")]
         public async Task SyncScores(CommandContext ctx)
         {
             var members = await ctx.Guild.GetAllMembersAsync();
@@ -28,7 +28,7 @@ namespace PuttPutt.Commands
             {
                 try
                 {
-                    var score = UsernameUtilities.GetScore(member.DisplayName);                     
+                    var score = UsernameUtilities.GetScore(member.DisplayName);
 
                     var scoreInfo = mongo.GetParticipantInfo(member, ctx.Guild);
 
@@ -105,6 +105,27 @@ namespace PuttPutt.Commands
             }
 
             await ctx.RespondAsync($"All done, I created {success} new member{(success > 1 ? "s" : "")} for the season. Good luck with the new season!");
+        }
+
+        [Command("updatenames")]
+        [Description("Modz only. Updates all user names on scoreboard.")]
+        public async Task UpdateNames(CommandContext ctx)
+        {
+            var scores = mongo.GetParticipants(ctx.Guild);
+
+            foreach(var entry in scores)
+            {
+                var user = await ctx.Guild.GetMemberAsync(entry.UserId);
+                var newName = UsernameUtilities.SanitizeUsername(user.DisplayName);
+                var oldName = entry.DisplayName;
+
+                entry.DisplayName = newName;
+                mongo.UpsertParticipant(entry);
+
+                Console.WriteLine($"{oldName} --> {newName}");
+            }
+
+            await ctx.RespondAsync($"All done!");
         }
     }
 }
