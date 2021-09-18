@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace PuttPutt.Utilities
 {
@@ -18,8 +18,8 @@ namespace PuttPutt.Utilities
         public static string SanitizeUsername(string source)
         {
             var scoreMatch = Regex.Match(source, SCORE_MATCH);
-            source.Replace(scoreMatch.Value, "");
-            return Regex.Replace(source, @"\s{2,}", " ");
+            source = source.Replace(scoreMatch.Value, "");
+            return Regex.Replace(source, @"\s{2,}", " ").Trim();
         }
     }
 }
