@@ -35,45 +35,42 @@ namespace PuttPutt.DataAccess
             archiveCollection.Indexes.CreateOne(new CreateIndexModel<Archive>(Builders<Archive>.IndexKeys.Ascending(x => x.Id)));
         }
 
-        public List<Participant> GetParticipants(DiscordGuild server) => particpantCollection.Find(x => x.ServerId == server.Id).ToList();
-
-        public Participant GetParticipantInfo(DiscordUser user, DiscordGuild server) =>
-            particpantCollection.Find(x => x.UserId == user.Id && x.ServerId == server.Id).FirstOrDefault();
+        public List<Participant> GetParticipants(ulong serverId) => particpantCollection.Find(x => x.ServerId == serverId).ToList();
 
         public Participant GetParticipantInfo(ulong userId, ulong serverId) =>
             particpantCollection.Find(x => x.UserId == userId && x.ServerId == serverId).FirstOrDefault();
 
-        public Participant UpsertParticipant(Participant participant)
+        public (Participant, ReplaceOneResult) UpsertParticipant(Participant participant)
         {
             if(string.IsNullOrWhiteSpace(participant.Id))
             {
                 participant.Id = ObjectId.GenerateNewId().ToString();
             }
 
-            particpantCollection.ReplaceOne(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId, participant, new ReplaceOptions() { IsUpsert = true });
+            var result = particpantCollection.ReplaceOne(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId, participant, new ReplaceOptions() { IsUpsert = true });
 
-            return GetParticipantInfo(participant);
+            return (GetParticipantInfo(participant), result);
         }
 
         public List<string> GetArchivalNames(DiscordGuild server) => archiveCollection.Find(x => x.ServerId == server.Id).ToList().Select(a => a.ArchiveName).Distinct().ToList();
 
         public Archive GetArchive(DiscordGuild server, string archiveName) => archiveCollection.Find(x => x.ServerId == server.Id && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
 
-        public void ArchiveSeason(DiscordGuild server, string archiveName)
+        public void ArchiveSeason(ulong serverId, string archiveName)
         {
             var archive = new Archive()
             {
                 ArchiveName = archiveName,
                 Id = ObjectId.GenerateNewId().ToString(),
-                ServerId = server.Id,
-                Participant = GetParticipants(server)
+                ServerId = serverId,
+                Participant = GetParticipants(serverId)
             };
 
             Console.WriteLine($"Archiving season. {JsonConvert.SerializeObject(archive)}");
 
             archiveCollection.InsertOne(archive);
 
-            particpantCollection.DeleteMany(x => x.ServerId == server.Id);
+            particpantCollection.DeleteMany(x => x.ServerId == serverId);
         }
 
         /// <summary>

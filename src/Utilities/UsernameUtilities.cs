@@ -12,7 +12,13 @@ namespace PuttPutt.Utilities
         public static int GetScore(string source)
         {
             var scoreMatch = Regex.Match(source, SCORE_MATCH);
-            return int.Parse(scoreMatch.Value.Substring(1, scoreMatch.Value.Length - 2));
+
+            if (scoreMatch.Success)
+            {
+                return int.Parse(scoreMatch.Value.Substring(1, scoreMatch.Value.Length - 2));
+            }
+
+            return 0;
         }
 
         /// <summary>

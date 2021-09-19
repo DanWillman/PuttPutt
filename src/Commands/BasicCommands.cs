@@ -20,7 +20,7 @@ namespace PuttPutt.Commands
         [Description("Displays the current scoreboard. Optionally can limit results. Example: `!scoreboard` or `!scoreboard 5`")]
         public async Task ReportScoreboard(CommandContext ctx, int limit = -1)
         {
-            var results = mongo.GetParticipants(ctx.Guild).OrderBy(p => p.Score).ToList();
+            var results = mongo.GetParticipants(ctx.Guild.Id).OrderBy(p => p.Score).ToList();
 
             if (limit != -1 && results.Count > limit)
             {
@@ -61,7 +61,7 @@ namespace PuttPutt.Commands
         [Description("Reports calling user's current score")]
         public async Task ReportScore(CommandContext ctx)
         {
-            var result = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+            var result = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
 
             await ctx.RespondAsync($"Looks like you're sitting at {result.Score}, {ctx.User.Mention}");
         }
@@ -70,7 +70,7 @@ namespace PuttPutt.Commands
         [Description("Reports calling user's score history. Optionally can limit results. Example: `!history` or `!history 5`")]
         public async Task ReportHistory(CommandContext ctx, int limit = -1)
         {
-            var events = mongo.GetParticipantInfo(ctx.User, ctx.Guild).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
+            var events = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
 
             if (limit != -1 && events.Count > limit)
             {
@@ -89,7 +89,7 @@ namespace PuttPutt.Commands
             [Description("Amount to modify current score")] int modifier,
             [RemainingText, Description("Optional reason for what you did, displayed in history")] string reason = "")
         {
-            var data = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+            var data = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
             var response = "";
 
             if (data == null)
@@ -135,7 +135,7 @@ namespace PuttPutt.Commands
             int originalScore = data.Score;
             data.Score += modifier;
 
-            var updatedData = mongo.UpsertParticipant(data);
+            (Participant updatedData, var result) = mongo.UpsertParticipant(data);
 
             response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
 
@@ -158,7 +158,7 @@ namespace PuttPutt.Commands
             {
                 response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
             }
-            var priorData = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+            var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
             var data = new Participant()
             {
                 Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,

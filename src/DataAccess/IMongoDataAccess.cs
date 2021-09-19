@@ -1,4 +1,5 @@
 ﻿using DSharpPlus.Entities;
+using MongoDB.Driver;
 using PuttPutt.Models;
 using System.Collections.Generic;
 
@@ -12,9 +13,9 @@ namespace PuttPutt.DataAccess
         /// <summary>
         /// Moves records from scores collection to a named archive collection entry
         /// </summary>
-        /// <param name="server">Discord server for season</param>
+        /// <param name="serverId">Discord server snowflake ID for season</param>
         /// <param name="archiveName">Archival name given to season</param>
-        void ArchiveSeason(DiscordGuild server, string archiveName);
+        void ArchiveSeason(ulong serverId, string archiveName);
 
         /// <summary>
         /// Gets all archive names from the specified server
@@ -37,20 +38,18 @@ namespace PuttPutt.DataAccess
         /// <param name="user">DiscordUser being searched for</param>
         /// <param name="server">DiscordGuild (server) tied to record</param>
         /// <returns></returns>
-        Participant GetParticipantInfo(DiscordUser user, DiscordGuild server);
-
         Participant GetParticipantInfo(ulong userId, ulong serverId);
 
         /// <summary>
         /// Returns an unsorted list of all particpant entries for a specified server
         /// </summary>
-        List<Participant> GetParticipants(DiscordGuild server);
+        List<Participant> GetParticipants(ulong serverId);
 
         /// <summary>
         /// Updates the participant info, inserting if missing.
         /// <para/>
         /// Returns updated participant value
         /// </summary>
-        Participant UpsertParticipant(Participant participant);
+        (Participant, ReplaceOneResult) UpsertParticipant(Participant participant);
     }
 }
