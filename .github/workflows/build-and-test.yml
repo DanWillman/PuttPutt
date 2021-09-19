@@ -38,7 +38,7 @@ jobs:
         ls -al ${{ github.workspace }}
         ls -al ${{ github.workspace }}/TestResults
         ls -al ${{ github.workspace }}/TestResults/*
-        mv -v  /home/runner/work/PuttPutt/PuttPutt/TestResults/*/*.coverage.cobertura.xml TestResults/
+        mv -v  TestResults/*/coverage.cobertura.xml TestResults/
     
     - run: ls -al ${{ github.workspace }}/test
 
