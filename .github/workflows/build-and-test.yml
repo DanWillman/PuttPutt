@@ -3,7 +3,6 @@ name: build and test
 on:
   push:
   pull_request:
-    branches: [ main ]
     paths:
     - '**.cs'
     - '**.csproj'
@@ -36,6 +35,8 @@ jobs:
     - name: Test
       run: dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal
     
+    - run: ls -al ${{ github.workspace }}/coverage
+
     - name: Codacy Coverage Reporter
       uses: codacy/codacy-coverage-reporter-action@v1.1.0
       with:
