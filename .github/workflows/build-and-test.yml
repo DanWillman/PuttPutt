@@ -34,8 +34,8 @@ jobs:
     
     - name: Test
       run:  |
-        dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal
-        mv -v UnitTests/TestResults/*/*.* ${{ github.workspace }}
+        dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal -r TestResults
+        mv -v TestResults/*/*.coverage.cobertura.xml TestResults/
     
     - run: ls -al ${{ github.workspace }}
 
@@ -43,4 +43,4 @@ jobs:
       uses: codacy/codacy-coverage-reporter-action@v1.1.0
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverage.cobertura.xml
+        coverage-reports: TestResults/coverage.cobertura.xml
