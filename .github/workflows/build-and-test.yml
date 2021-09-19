@@ -33,7 +33,9 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     
     - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal
+      run:  |
+        dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal
+        mv -v UnitTests/TestResults/*/*.* ${{ github.workspace }}
     
     - run: ls -al ${{ github.workspace }}
 
