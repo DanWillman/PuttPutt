@@ -155,14 +155,25 @@ namespace PuttPutt.Commands
             {
                 response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
             }
+            var priorData = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
             var data = new Participant()
             {
+                Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
                 ServerId = ctx.Guild.Id,
                 UserId = ctx.Member.Id,
                 DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
                 Score = score,
-                EventHistory = new List<Event>()
+                EventHistory = (priorData.EventHistory == null) ? new() : priorData.EventHistory
             };
+
+            data.EventHistory.Add(new()
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                EventTimeUTC = DateTime.UtcNow,
+                ScoreModifier = 0,
+                ScoreSnapshot = score,
+                PriorScore = (priorData == null) ? 0 : priorData.Score
+            });
 
             mongo.UpsertParticipant(data);
 
