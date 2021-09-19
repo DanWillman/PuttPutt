@@ -1,5 +1,4 @@
-﻿using DSharpPlus.Entities;
-using PuttPutt.DataAccess;
+﻿using PuttPutt.DataAccess;
 using PuttPutt.Models;
 using PuttPutt.Utilities;
 using System;
@@ -21,7 +20,7 @@ namespace PuttPutt.Services.AdminCommandService
             this.mongo = mongo;
         }
 
-        public int SyncScores(IReadOnlyCollection<Member> members, ulong serverId)
+        public int SyncScores(List<Member> members, ulong serverId)
         {
             int successCount = 0;
             int failCount = 0;
@@ -67,13 +66,12 @@ namespace PuttPutt.Services.AdminCommandService
             return successCount;
         }
 
-        public int StartSeason(IReadOnlyCollection<Member> members, ulong serverId, string archiveName = "")
+        public int StartSeason(List<Member> members, ulong serverId) => StartSeason(members, serverId, DateTime.UtcNow.ToString());
+
+        public int StartSeason(List<Member> members, ulong serverId, string archiveName)
         {
             int success = 0;
             int fail = 0;
-
-            //Use current timestamp if not provided an archive name
-            archiveName = string.IsNullOrWhiteSpace(archiveName) ? DateTime.UtcNow.ToString() : archiveName;
             
             mongo.ArchiveSeason(serverId, archiveName);
 

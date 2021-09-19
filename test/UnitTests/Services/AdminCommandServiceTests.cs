@@ -66,6 +66,41 @@ namespace UnitTests.Services
         }
 
         [Test]
+        public void StartSpecificSeason_HappyPath_UpdatesAllMembers()
+        {
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var members = A.ListOf<Member>();
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.UpsertParticipant(It.IsAny<Participant>())).Returns((participant, null));
+
+            var adminService = mock.CreateInstance<AdminCommandService>();
+
+            var actual = adminService.StartSeason(members, participant.ServerId, "potato");
+
+            Assert.AreEqual(members.Count, actual);
+        }
+
+        [Test]
+        public void StartSpecificSeason_ExceptionEncounter_NoExceptionThrown_UpdatesWhatItCan()
+        {
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var members = A.ListOf<Member>(2);
+
+            mock.GetMock<IMongoDataAccess>()
+                .SetupSequence(x => x.UpsertParticipant(It.IsAny<Participant>()))
+                .Returns((participant, null))
+                .Throws(new Exception("Potato"));
+
+            var adminService = mock.CreateInstance<AdminCommandService>();
+
+            var actual = adminService.StartSeason(members, participant.ServerId, "potato");
+
+            Assert.AreEqual(1, actual);
+        }
+
+        [Test]
         public void SyncScores_HappyPath_UpdatesAllMembers()
         {
             GenFu.GenFu.Configure<Member>()

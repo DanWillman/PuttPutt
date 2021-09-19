@@ -50,7 +50,9 @@ namespace PuttPutt.Commands
                                                                     Id = m.Id,
                                                                     DisplayName = m.DisplayName
                                                                 }).ToList();
-            int success = adminService.StartSeason(members, ctx.Guild.Id, archiveName);
+            int success = string.IsNullOrWhiteSpace(archiveName) ? 
+                            adminService.StartSeason(members, ctx.Guild.Id) : 
+                            adminService.StartSeason(members, ctx.Guild.Id, archiveName);
 
             await ctx.RespondAsync($"All done, I created {success} new member{(success > 1 ? "s" : "")} for the season. Good luck with the new season!");
         }
