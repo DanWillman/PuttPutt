@@ -34,4 +34,16 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal
+  
+  codacy-coverage-reporter:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    name: codacy-coverage-reporter
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run codacy-coverage-reporter
+        uses: ./
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: cobertura.xml
