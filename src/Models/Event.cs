@@ -35,5 +35,10 @@ namespace PuttPutt.Models
         /// Users score prior to event triggering
         /// </summary>
         public int PriorScore { get; set; }
+
+        /// <summary>
+        /// User provided notes for the change
+        /// </summary>
+        public string Notes { get; set; }
     }
 }

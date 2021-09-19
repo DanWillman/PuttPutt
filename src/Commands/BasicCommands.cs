@@ -86,7 +86,8 @@ namespace PuttPutt.Commands
         [Command("fore")]
         [Description("Updates a users score. Example use: `!fore -5` or `!fore 5`")]
         public async Task UpdateUserScore(CommandContext ctx,
-            [Description("Amount to modify current score")] int modifier)
+            [Description("Amount to modify current score")] int modifier,
+            [RemainingText, Description("Optional reason for what you did, displayed in history")] string reason = "")
         {
             var data = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
             var response = "";
@@ -127,7 +128,8 @@ namespace PuttPutt.Commands
                 EventTimeUTC = DateTime.UtcNow,
                 ScoreModifier = modifier,
                 PriorScore = data.Score,
-                ScoreSnapshot = data.Score + modifier
+                ScoreSnapshot = data.Score + modifier,
+                Notes = reason
             });
 
             int originalScore = data.Score;
@@ -143,7 +145,8 @@ namespace PuttPutt.Commands
         [Command("setscore")]
         [Description("Sets a users score. Example use: `!setscore -5` or `!setscore 5`")]
         public async Task SetUserScore(CommandContext ctx,
-            [Description("New score")] int score)
+            [Description("New score")] int score,
+            [RemainingText, Description("Optional reason for why you're setting this, displayed in history")] string reason = "")
         {
             string response = "";
             string displayName = string.Empty;
@@ -172,6 +175,7 @@ namespace PuttPutt.Commands
                 EventTimeUTC = DateTime.UtcNow,
                 ScoreModifier = 0,
                 ScoreSnapshot = score,
+                Notes = reason,
                 PriorScore = (priorData == null) ? 0 : priorData.Score
             });
 
