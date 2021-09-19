@@ -1,7 +1,7 @@
 # PuttPutt
 A discord bot for mini painting shame golf
 
-# Commands
+[![build and test](https://github.com/DanWillman/PuttPutt/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/DanWillman/PuttPutt/actions/workflows/build-and-test.yml)
 * `!fore [modifier] {Reason}` Modifies your current score with the provided modifier. This modifier is required, so PuttPutt knows how much to adjust your score by. Optionally, any text after the modifier will be stored as a note for this event in history. 
   *  Example: `!fore -2`, `!fore -2 Painted some new duder`
 * `!setscore [score] {Reason}` Sets your current score to the provided score. Optionally, any text after the score will be stored as a note for this event in history.
