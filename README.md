@@ -2,13 +2,23 @@
 A discord bot for mini painting shame golf
 
 # Commands
-* `!fore [modifier]` Modifies your current score with the provided modifier. This modifier is required, so PuttPutt knows how much to adjust your score by
-  *  Example: `!fore -2`
+* `!fore [modifier] {Reason}` Modifies your current score with the provided modifier. This modifier is required, so PuttPutt knows how much to adjust your score by. Optionally, any text after the modifier will be stored as a note for this event in history. 
+  *  Example: `!fore -2`, `!fore -2 Painted some new duder`
+* `!setscore [score] {Reason}` Sets your current score to the provided score. Optionally, any text after the score will be stored as a note for this event in history.
+  *  Example: `!setscore 0`, `!setscore 0 Resetting for some reason`
 * `!scoreboard {limit}` Displays the scoreboard. Optionally, you can provide a limit value to only show the top N results
   *  Example: `!scoreboard`, `!scoreboard 10`
+* `!history {limit}` Displays your history. Optionally, you can provide a limit value to only show the top N results
+  *  Example: `!history`, `!history 10`
+* `!archives` Gets a list of all archive names, allowing the user to then pull up a scoreboard for that season
+* `!seasonscores [archive]` Displays the scoreboard for the specified archive (season) name. Hint: use `!archives` to get the list, or check out [shame.golf](shame.golf)
+  *  Example: `!seasonscores Summer2021`
 * `!myscore` Reports your current score
 ## Mod commands
 * `!sync` Overwrites the database with values from usernames in the server. Currently, this pulls scores in a format of `[15]` or `{15}`, including negative scores. 
+* `!season {name}` Archives the current season and begins anew. If you provide a name, it will be used, otherwise a timestamp will be used.
+  *  Example: `!season`, `!season Summer2021`
+* `!updatenames` Updates all user names on scoreboard to their sanitized (no score, remove excess spaces) names.
 
 # Configuration
 ## Bot Authentication
