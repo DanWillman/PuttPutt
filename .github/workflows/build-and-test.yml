@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -35,12 +35,7 @@ jobs:
     - name: Test
       run:  |
         dotnet test --collect:"XPlat Code Coverage" --no-restore --verbosity normal -r TestResults
-        ls -al ${{ github.workspace }}
-        ls -al ${{ github.workspace }}/TestResults
-        ls -al ${{ github.workspace }}/TestResults/*
         mv -v  TestResults/*/coverage.cobertura.xml TestResults/
-    
-    - run: ls -al ${{ github.workspace }}/test
 
     - name: Codacy Coverage Reporter
       uses: codacy/codacy-coverage-reporter-action@v1.1.0
