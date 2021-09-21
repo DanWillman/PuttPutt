@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Net.Models;
 using MongoDB.Bson;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
@@ -149,10 +150,67 @@ namespace PuttPutt.Commands
             [RemainingText, Description("Optional reason for why you're setting this, displayed in history")] string reason = "")
         {
             string response = "";
-            string displayName = string.Empty;
             try
             {
-                displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
+                var data = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+
+                if (data == null)
+                {
+                    string displayName = string.Empty;
+                    try
+                    {
+                        displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
+                    data = new Participant()
+                    {
+                        ServerId = ctx.Guild.Id,
+                        UserId = ctx.Member.Id,
+                        DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
+                        EventHistory = new List<Event>()
+                    };
+                }
+                else if (data.EventHistory == null)
+                {
+                    data.EventHistory = new List<Event>();
+                }
+
+                data.EventHistory.Add(new Event()
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    EventTimeUTC = DateTime.UtcNow,
+                    ScoreModifier = 0,
+                    ScoreSnapshot = score,
+                    PriorScore = data.Score
+                });
+
+                data.Score = score;
+
+                mongo.UpsertParticipant(data);
+                response = $"Ok, I've set your score to {data.Score}.";
+
+                string newDisplayName = UsernameUtilities.UpdateUsernameScore(ctx.Member.DisplayName, data.Score);
+
+                if (!newDisplayName.Equals(ctx.Member.DisplayName))
+                {
+                    try
+                    {                      
+                        await ctx.Member.ModifyAsync(x =>
+                        {
+                            x.Nickname = newDisplayName;
+                            x.AuditLogReason = $"Changed by PuttPutt, new score";
+                        });
+
+                        response += $" I updated your name as well";
+                    }
+                    catch(Exception ex)
+                    {
+                        response += $" I tried to update your display name, but something went wrong: {ex.Message}";
+                    }                    
+                }                
             }
             catch (Exception ex)
             {
