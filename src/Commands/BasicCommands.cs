@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Net.Models;
 using MongoDB.Bson;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
@@ -139,6 +140,17 @@ namespace PuttPutt.Commands
 
             response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
 
+            try
+            {
+                await UpdateUserName(ctx.Member, data.Score);
+                response += $"{Environment.NewLine}I updated your name as well";
+            }
+            catch (Exception ex)
+            {
+                response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
+            }
+            
+
             await ctx.RespondAsync(response);
         }
 
@@ -148,42 +160,65 @@ namespace PuttPutt.Commands
             [Description("New score")] int score,
             [RemainingText, Description("Optional reason for why you're setting this, displayed in history")] string reason = "")
         {
-            string response = "";
-            string displayName = string.Empty;
+            string response = $"Ok, I've set your score to {score}";
+            string newDisplayName = "";
             try
             {
-                displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
+                await UpdateUserName(ctx.Member, score);
+                response += $"{Environment.NewLine}I updated your name as well";
             }
             catch (Exception ex)
             {
-                response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
+                response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
             }
             var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
             var data = new Participant()
+
+            try
             {
-                Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
-                ServerId = ctx.Guild.Id,
-                UserId = ctx.Member.Id,
-                DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
-                Score = score,
-                EventHistory = (priorData.EventHistory == null) ? new() : priorData.EventHistory
-            };
+                var priorData = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+                var data = new Participant()
+                {
+                    Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
+                    ServerId = ctx.Guild.Id,
+                    UserId = ctx.Member.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? ctx.Member.DisplayName : newDisplayName,
+                    Score = score,
+                    EventHistory = (priorData.EventHistory == null) ? new() : priorData.EventHistory
+                };
 
-            data.EventHistory.Add(new()
+                data.EventHistory.Add(new()
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    EventTimeUTC = DateTime.UtcNow,
+                    ScoreModifier = 0,
+                    ScoreSnapshot = score,
+                    Notes = reason,
+                    PriorScore = (priorData == null) ? 0 : priorData.Score
+                });
+
+                mongo.UpsertParticipant(data);
+            }
+            catch (Exception ex)
             {
-                Id = ObjectId.GenerateNewId().ToString(),
-                EventTimeUTC = DateTime.UtcNow,
-                ScoreModifier = 0,
-                ScoreSnapshot = score,
-                Notes = reason,
-                PriorScore = (priorData == null) ? 0 : priorData.Score
-            });
-
-            mongo.UpsertParticipant(data);
-
-            response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've set your score to {data.Score}" : response;
+                response = $"Oops, something went wrong: {ex.Message}";
+            }            
 
             await ctx.RespondAsync(response);
+        }
+
+        private async Task UpdateUserName(DiscordMember member, int score)
+        {
+            var newDisplayName = UsernameUtilities.UpdateUsernameScore(member.DisplayName, score);
+
+            if (!newDisplayName.Equals(member.DisplayName))
+            {
+                await member.ModifyAsync(x =>
+                {
+                    x.Nickname = newDisplayName;
+                    x.AuditLogReason = $"Changed by PuttPutt, new score";
+                });
+            }
         }
     }
 }
