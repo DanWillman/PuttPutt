@@ -140,6 +140,17 @@ namespace PuttPutt.Commands
 
             response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
 
+            try
+            {
+                await UpdateUserName(ctx.Member, data.Score);
+                response += $"{Environment.NewLine}I updated your name as well";
+            }
+            catch (Exception ex)
+            {
+                response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
+            }
+            
+
             await ctx.RespondAsync(response);
         }
 
@@ -153,18 +164,8 @@ namespace PuttPutt.Commands
             string newDisplayName = "";
             try
             {
-                newDisplayName = UsernameUtilities.UpdateUsernameScore(ctx.Member.DisplayName, score);
-
-                if (!newDisplayName.Equals(ctx.Member.DisplayName))
-                {
-                    await ctx.Member.ModifyAsync(x =>
-                    {
-                        x.Nickname = newDisplayName;
-                        x.AuditLogReason = $"Changed by PuttPutt, new score";
-                    });
-
-                    response += $"{Environment.NewLine}I updated your name as well";
-                }
+                await UpdateUserName(ctx.Member, score);
+                response += $"{Environment.NewLine}I updated your name as well";
             }
             catch (Exception ex)
             {
@@ -202,6 +203,20 @@ namespace PuttPutt.Commands
             }            
 
             await ctx.RespondAsync(response);
+        }
+
+        private async Task UpdateUserName(DiscordMember member, int score)
+        {
+            var newDisplayName = UsernameUtilities.UpdateUsernameScore(member.DisplayName, score);
+
+            if (!newDisplayName.Equals(member.DisplayName))
+            {
+                await member.ModifyAsync(x =>
+                {
+                    x.Nickname = newDisplayName;
+                    x.AuditLogReason = $"Changed by PuttPutt, new score";
+                });
+            }
         }
     }
 }
