@@ -161,7 +161,7 @@ namespace PuttPutt.Commands
             [RemainingText, Description("Optional reason for why you're setting this, displayed in history")] string reason = "")
         {
             string response = $"Ok, I've set your score to {score}";
-            string newDisplayName = "";
+            string newDisplayName = string.Empty;
             try
             {
                 await UpdateUserName(ctx.Member, score);
