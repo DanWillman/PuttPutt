@@ -9,6 +9,7 @@ using DSharpPlus.Net.Models;
 using MongoDB.Bson;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
+using PuttPutt.Services.BasicCommandService;
 using PuttPutt.Utilities;
 
 namespace PuttPutt.Commands
@@ -16,21 +17,22 @@ namespace PuttPutt.Commands
     public class BasicCommands : BaseCommandModule
     {
         private MongoDataAccess mongo = new MongoDataAccess();
+        private readonly IBasicCommandService commandService;
+
+        public BasicCommands(IBasicCommandService commandService)
+        {
+            this.commandService = commandService;
+        }
 
         [Command("scoreboard")]
         [Description("Displays the current scoreboard. Optionally can limit results. Example: `!scoreboard` or `!scoreboard 5`")]
         public async Task ReportScoreboard(CommandContext ctx, int limit = -1)
         {
-            var results = mongo.GetParticipants(ctx.Guild.Id).OrderBy(p => p.Score).ToList();
+            var golfer = DiscordEmoji.FromName(ctx.Client, ":golfer:");
+            var messageStrings = limit >= 0 ? commandService.ReportScoreboard(ctx.Guild.Id, limit, golfer)
+                                            : commandService.ReportScoreboard(ctx.Guild.Id, golfer);
 
-            if (limit != -1 && results.Count > limit)
-            {
-                results = results.GetRange(0, limit);
-            }
-
-            var golferEmoji = DiscordEmoji.FromName(ctx.Client, ":golfer:");
-
-            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, golferEmoji))
+            foreach (string message in messageStrings)
             {
                 await ctx.RespondAsync(message);
             }
@@ -40,9 +42,7 @@ namespace PuttPutt.Commands
         [Description("Gets a list of all archive names, allowing the user to then pull up a scoreboard for that season")]
         public async Task GetArchives(CommandContext ctx)
         {
-            var results = mongo.GetArchivalNames(ctx.Guild);
-
-            await ctx.RespondAsync(string.Join(",", results));
+            await ctx.RespondAsync(commandService.GetArchives(ctx.Guild.Id));
         }
 
         [Command("seasonscores")]
@@ -71,14 +71,10 @@ namespace PuttPutt.Commands
         [Description("Reports calling user's score history. Optionally can limit results. Example: `!history` or `!history 5`")]
         public async Task ReportHistory(CommandContext ctx, int limit = -1)
         {
-            var events = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
+            var messageStrings = limit >= 0 ? commandService.ReportHistory(ctx.Guild.Id, ctx.User.Id, limit)
+                                            : commandService.ReportHistory(ctx.Guild.Id, ctx.User.Id);
 
-            if (limit != -1 && events.Count > limit)
-            {
-                events = events.GetRange(0, limit);
-            }
-
-            foreach (string message in MessageFormatter.FormatHistoryToDiscordMessage(events))
+            foreach (string message in messageStrings)
             {
                 await ctx.RespondAsync(message);
             }
@@ -171,12 +167,10 @@ namespace PuttPutt.Commands
             {
                 response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
             }
-            var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
-            var data = new Participant()
 
             try
             {
-                var priorData = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
+                var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
                 var data = new Participant()
                 {
                     Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
@@ -202,7 +196,7 @@ namespace PuttPutt.Commands
             catch (Exception ex)
             {
                 response = $"Oops, something went wrong: {ex.Message}";
-            }            
+            }        
 
             await ctx.RespondAsync(response);
         }

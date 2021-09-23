@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DSharpPlus.Entities;
+using PuttPutt.DataAccess;
+using PuttPutt.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +12,16 @@ namespace PuttPutt.Services.BasicCommandService
     /// <inheritdoc/>
     public class BasicCommandService : IBasicCommandService
     {
-        public Task<string> GetArchives(ulong serverId)
+        private readonly IMongoDataAccess mongo;
+
+        public BasicCommandService(IMongoDataAccess mongo)
         {
-            throw new NotImplementedException();
+            this.mongo = mongo;
+        }
+
+        public string GetArchives(ulong serverId)
+        {
+            return string.Join(", ", mongo.GetArchivalNames(serverId));
         }
 
         public Task<string> ReportArchiveScoreboard(ulong serverId, string archiveName)
@@ -19,29 +29,50 @@ namespace PuttPutt.Services.BasicCommandService
             throw new NotImplementedException();
         }
 
-        public Task<string> ReportHistory(ulong serverId, ulong userId)
+        public List<string> ReportHistory(ulong serverId, ulong userId)
         {
-            throw new NotImplementedException();
+            return ReportHistory(serverId, userId, -1);
         }
 
-        public Task<string> ReportHistory(ulong serverId, ulong userId, int limit)
+        public List<string> ReportHistory(ulong serverId, ulong userId, int limit)
         {
-            throw new NotImplementedException();
+            var response = new List<string>();
+            var events = mongo.GetParticipantInfo(userId, serverId).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
+
+            if (limit != -1 && events.Count > limit)
+            {
+                events = events.GetRange(0, limit);
+            }
+
+            foreach (string message in MessageFormatter.FormatHistoryToDiscordMessage(events))
+            {
+                MessageFormatter.AddOrExtendDiscordStrings(response, message);
+            }
+
+            return response;
         }
 
-        public Task<string> ReportScore(ulong serverId, ulong userId)
+        public List<string> ReportScoreboard(ulong serverId, DiscordEmoji headerEmoji)
         {
-            throw new NotImplementedException();
+            return ReportScoreboard(serverId, -1, headerEmoji);
         }
 
-        public Task<List<string>> ReportScoreboard(ulong serverId)
+        public List<string> ReportScoreboard(ulong serverId, int limit, DiscordEmoji headerEmoji)
         {
-            throw new NotImplementedException();
-        }
+            var response = new List<string>();
+            var results = mongo.GetParticipants(serverId).OrderBy(p => p.Score).ToList();
 
-        public Task<List<string>> ReportScoreboard(ulong serverId, int limit)
-        {
-            throw new NotImplementedException();
+            if (limit != -1 && results.Count > limit)
+            {
+                results = results.GetRange(0, limit);
+            }
+
+            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, headerEmoji))
+            {
+                MessageFormatter.AddOrExtendDiscordStrings(response, message);
+            }
+
+            return response;
         }
 
         public Task<string> SetUserScore(ulong serverId, ulong userId, int score)

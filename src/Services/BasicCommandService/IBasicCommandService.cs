@@ -1,22 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using DSharpPlus.Entities;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PuttPutt.Services.BasicCommandService
 {
     public interface IBasicCommandService
     {
-        Task<List<string>> ReportScoreboard(ulong serverId);
-        Task<List<string>> ReportScoreboard(ulong serverId, int limit);
+        List<string> ReportScoreboard(ulong serverId, DiscordEmoji headerEmoji);
+        List<string> ReportScoreboard(ulong serverId, int limit, DiscordEmoji headerEmoji);
 
-        Task<string> GetArchives(ulong serverId);
+        string GetArchives(ulong serverId);
 
         Task<string> ReportArchiveScoreboard(ulong serverId, string archiveName);
 
-        Task<string> ReportScore(ulong serverId, ulong userId);
+        List<string> ReportHistory(ulong serverId, ulong userId);
 
-        Task<string> ReportHistory(ulong serverId, ulong userId);
-
-        Task<string> ReportHistory(ulong serverId, ulong userId, int limit);
+        List<string> ReportHistory(ulong serverId, ulong userId, int limit);
 
         Task<string> UpdateUserScore(ulong serverId, ulong userId, int modifier);
         Task<string> UpdateUserScore(ulong serverId, ulong userId, int modifier, string note);

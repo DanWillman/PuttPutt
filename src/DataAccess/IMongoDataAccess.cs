@@ -22,7 +22,7 @@ namespace PuttPutt.DataAccess
         /// </summary>
         /// <param name="server"></param>
         /// <returns></returns>
-        List<string> GetArchivalNames(DiscordGuild server);
+        List<string> GetArchivalNames(ulong serverId);
 
         /// <summary>
         /// Gets the archival entry for the specified server and name

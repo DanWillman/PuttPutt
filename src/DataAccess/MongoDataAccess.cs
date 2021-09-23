@@ -52,7 +52,7 @@ namespace PuttPutt.DataAccess
             return (GetParticipantInfo(participant), result);
         }
 
-        public List<string> GetArchivalNames(DiscordGuild server) => archiveCollection.Find(x => x.ServerId == server.Id).ToList().Select(a => a.ArchiveName).Distinct().ToList();
+        public List<string> GetArchivalNames(ulong serverId) => archiveCollection.Find(x => x.ServerId == serverId).ToList().Select(a => a.ArchiveName).Distinct().ToList();
 
         public Archive GetArchive(DiscordGuild server, string archiveName) => archiveCollection.Find(x => x.ServerId == server.Id && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
 

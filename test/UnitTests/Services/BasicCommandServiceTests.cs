@@ -42,7 +42,7 @@ namespace UnitTests.Services
 
             var adminService = mock.CreateInstance<BasicCommandService>();
 
-            var actual = await adminService.ReportScoreboard(RandomULong(1)[0]);
+            var actual = adminService.ReportScoreboard(RandomULong(1)[0], null);
 
             foreach(var member in members)
             {
