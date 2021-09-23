@@ -104,7 +104,7 @@ namespace PuttPutt.Commands
                 }
                 catch (Exception ex)
                 {
-                    response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
+                    Console.WriteLine($"Unable to parse score from name: {ctx.Member.DisplayName} {Environment.NewLine} {ex.Message} {Environment.NewLine} {ex.StackTrace}");
                 }
 
                 data = new Participant()
