@@ -177,12 +177,12 @@ namespace PuttPutt.Commands
                 var priorData = mongo.GetParticipantInfo(ctx.User, ctx.Guild);
                 var data = new Participant()
                 {
-                    Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
+                    Id = string.IsNullOrWhiteSpace(priorData?.Id) ? string.Empty : priorData.Id,
                     ServerId = ctx.Guild.Id,
                     UserId = ctx.Member.Id,
                     DisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? ctx.Member.DisplayName : newDisplayName,
                     Score = score,
-                    EventHistory = (priorData.EventHistory == null) ? new() : priorData.EventHistory
+                    EventHistory = (priorData?.EventHistory == null) ? new() : priorData.EventHistory
                 };
 
                 data.EventHistory.Add(new()
