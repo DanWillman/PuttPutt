@@ -22,5 +22,10 @@ namespace PuttPutt.Services.AdminCommandService
         /// </summary>
         /// <returns>Number of successfully synced members</returns>
         int SyncScores(List<Member> members, ulong serverId);
+
+        /// <summary>
+        /// Sanitize the provided username and update the participant's record
+        /// </summary>
+        void UpdateUsername(Participant entry, string newName);
     }
 }

@@ -3,8 +3,6 @@ using DSharpPlus.CommandsNext.Attributes;
 using PuttPutt.DataAccess;
 using PuttPutt.Models;
 using PuttPutt.Services.AdminCommandService;
-using PuttPutt.Utilities;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -65,12 +63,7 @@ namespace PuttPutt.Commands
 
             foreach(var entry in scores)
             {
-                var user = await ctx.Guild.GetMemberAsync(entry.UserId);
-                var newName = UsernameUtilities.SanitizeUsername(user.DisplayName);
-
-                entry.DisplayName = newName;
-
-                mongo.UpsertParticipant(entry);
+                adminService.UpdateUsername(entry, (await ctx.Guild.GetMemberAsync(entry.UserId)).DisplayName);
             }
 
             await ctx.RespondAsync($"All done!");

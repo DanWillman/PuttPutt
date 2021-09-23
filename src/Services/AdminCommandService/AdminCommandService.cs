@@ -103,5 +103,11 @@ namespace PuttPutt.Services.AdminCommandService
 
             return success;
         }
+
+        public void UpdateUsername(Participant entry, string newName)
+        {
+            entry.DisplayName = UsernameUtilities.SanitizeUsername(newName);
+            mongo.UpsertParticipant(entry);
+        }
     }
 }
