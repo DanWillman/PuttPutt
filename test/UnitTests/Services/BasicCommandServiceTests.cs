@@ -106,7 +106,6 @@ namespace UnitTests.Services
         }
 
         [TestCase(1)]
-        [TestCase(5)]
         [TestCase(10)]
         [TestCase(14)]
         public void ReportHistory_Limit_ReturnsLimitedHistory(int limit)
