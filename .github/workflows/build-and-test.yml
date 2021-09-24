@@ -31,6 +31,10 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run:  |
+        dotnet test --verbosity normal
   
   sonarcloud:
     name: Sonar Analysis
