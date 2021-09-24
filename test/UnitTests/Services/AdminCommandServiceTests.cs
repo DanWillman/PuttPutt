@@ -1,5 +1,4 @@
 ﻿using GenFu;
-using MongoDB.Driver;
 using Moq;
 using Moq.AutoMock;
 using NUnit.Framework;
@@ -101,6 +100,25 @@ namespace UnitTests.Services
         }
 
         [Test]
+        public void StartSpecificSeason_ArgumentExceptionEncounter_NoExceptionThrown_UpdatesWhatItCan()
+        {
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var members = A.ListOf<Member>(2);
+
+            mock.GetMock<IMongoDataAccess>()
+                .SetupSequence(x => x.UpsertParticipant(It.IsAny<Participant>()))
+                .Returns((participant, null))
+                .Throws(new ArgumentException("Potato"));
+
+            var adminService = mock.CreateInstance<AdminCommandService>();
+
+            var actual = adminService.StartSeason(members, participant.ServerId, "potato");
+
+            Assert.AreEqual(1, actual);
+        }
+
+        [Test]
         public void SyncScores_HappyPath_UpdatesAllMembers()
         {
             GenFu.GenFu.Configure<Member>()
@@ -114,6 +132,27 @@ namespace UnitTests.Services
 
             mock.GetMock<IMongoDataAccess>().Setup(x => x.UpsertParticipant(It.IsAny<Participant>())).Returns((participant, null));
             mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
+
+            var adminService = mock.CreateInstance<AdminCommandService>();
+
+            var actual = adminService.SyncScores(members, participant.ServerId);
+
+            Assert.AreEqual(members.Count, actual);
+        }
+
+        [Test]
+        public void SyncScores_NotInDb_CreatesUser()
+        {
+            GenFu.GenFu.Configure<Member>()
+                .Fill(m => m.Id)
+                .WithRandom(RandomULong())
+                .Fill(m => m.DisplayName)
+                .WithRandom(RandomDisplayNames());
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var members = A.ListOf<Member>();
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.UpsertParticipant(It.IsAny<Participant>())).Returns((participant, null));
 
             var adminService = mock.CreateInstance<AdminCommandService>();
 
@@ -145,6 +184,42 @@ namespace UnitTests.Services
             var actual = adminService.SyncScores(members, participant.ServerId);
 
             Assert.AreEqual(1, actual);
+        }
+
+        [Test]
+        public void SyncScores_ArgumentExceptionEncounter_NoExceptionThrown_UpdatesWhatItCan()
+        {
+            GenFu.GenFu.Configure<Member>()
+                .Fill(m => m.Id)
+                .WithRandom(RandomULong())
+                .Fill(m => m.DisplayName)
+                .WithRandom(RandomDisplayNames());
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var members = A.ListOf<Member>(2);
+
+            mock.GetMock<IMongoDataAccess>()
+                .SetupSequence(x => x.UpsertParticipant(It.IsAny<Participant>()))
+                .Returns((participant, null))
+                .Throws(new ArgumentException("Potato"));
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
+
+            var adminService = mock.CreateInstance<AdminCommandService>();
+
+            var actual = adminService.SyncScores(members, participant.ServerId);
+
+            Assert.AreEqual(1, actual);
+        }
+
+        [Test]
+        public void UpdateUsername_HappyPath_NoException()
+        {
+            var participant = A.New<Participant>();
+
+            var mock = new AutoMocker();
+            var service = mock.CreateInstance<AdminCommandService>();
+
+            service.UpdateUsername(participant, "potato");
         }
 
         private List<ulong> RandomULong(int count = 1)
