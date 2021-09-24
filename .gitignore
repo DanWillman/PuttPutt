@@ -11,3 +11,4 @@ bin/
 mongo/
 
 .vs/
+test/UnitTests/coverage.opencover.xml
