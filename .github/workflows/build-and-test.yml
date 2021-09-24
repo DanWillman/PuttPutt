@@ -31,10 +31,6 @@ jobs:
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    
-    - name: Test
-      run:  |
-        dotnet test --collect:"XPlat Code Coverage" --CoverletOutputFormat=opencover --no-restore --verbosity normal -r TestResults
   
   sonarcloud:
     name: Sonar Analysis
