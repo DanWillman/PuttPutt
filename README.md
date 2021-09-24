@@ -2,7 +2,9 @@
 A discord bot for mini painting shame golf
 
 [![Build And Test](https://github.com/DanWillman/PuttPutt/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/DanWillman/PuttPutt/actions/workflows/build-and-test.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/4e0fe466ec1f4611be76a440ca7bc9ea)](https://www.codacy.com/gh/DanWillman/PuttPutt/dashboard?utm_source=github.com&utm_medium=referral&utm_content=DanWillman/PuttPutt&utm_campaign=Badge_Coverage)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=coverage)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=alert_status)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
 
 * `!fore [modifier] {Reason}` Modifies your current score with the provided modifier. This modifier is required, so PuttPutt knows how much to adjust your score by. Optionally, any text after the modifier will be stored as a note for this event in history. 
   *  Example: `!fore -2`, `!fore -2 Painted some new duder`
