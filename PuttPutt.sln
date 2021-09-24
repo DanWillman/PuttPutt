@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31025.194
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuttPutt", "src\PuttPutt.csproj", "{5D2DBBDF-51CA-4DB2-BB37-E1E937DAFFDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{50640044-F3DA-4530-B8C1-28E5018C582D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "test\UnitTests\UnitTests.csproj", "{50640044-F3DA-4530-B8C1-28E5018C582D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5D2DBBDF-51CA-4DB2-BB37-E1E937DAFFDD} = {5D2DBBDF-51CA-4DB2-BB37-E1E937DAFFDD}
 	EndProjectSection
