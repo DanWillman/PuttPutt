@@ -5,7 +5,6 @@ A discord bot for mini painting shame golf
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=coverage)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=alert_status)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DanWillman_PuttPutt&metric=coverage)](https://sonarcloud.io/dashboard?id=DanWillman_PuttPutt)
 
 * `!fore [modifier] {Reason}` Modifies your current score with the provided modifier. This modifier is required, so PuttPutt knows how much to adjust your score by. Optionally, any text after the modifier will be stored as a note for this event in history. 
   *  Example: `!fore -2`, `!fore -2 Painted some new duder`
