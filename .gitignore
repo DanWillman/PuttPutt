@@ -11,4 +11,4 @@ bin/
 mongo/
 
 .vs/
-test/UnitTests/TestResults/
+test/UnitTests/coverage.opencover.xml

@@ -100,7 +100,7 @@ namespace PuttPutt.Commands
                 }
                 catch (Exception ex)
                 {
-                    response += $"Oops, something went wrong - {ex.Message}{Environment.NewLine}";
+                    Console.WriteLine($"Unable to parse score from name: {ctx.Member.DisplayName} {Environment.NewLine} {ex.Message} {Environment.NewLine} {ex.StackTrace}");
                 }
 
                 data = new Participant()
@@ -138,14 +138,18 @@ namespace PuttPutt.Commands
 
             try
             {
-                await UpdateUserName(ctx.Member, data.Score);
-                response += $"{Environment.NewLine}I updated your name as well";
+                var newName = await UpdateUserName(ctx.Member, data.Score);
+
+                if (!ctx.Member.DisplayName.Equals(newName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    response += $"{Environment.NewLine}I updated your name as well";
+                }
             }
             catch (Exception ex)
             {
                 response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
             }
-            
+
 
             await ctx.RespondAsync(response);
         }
@@ -157,11 +161,14 @@ namespace PuttPutt.Commands
             [RemainingText, Description("Optional reason for why you're setting this, displayed in history")] string reason = "")
         {
             string response = $"Ok, I've set your score to {score}";
-            string newDisplayName = "";
+            string newDisplayName = string.Empty;
             try
             {
-                await UpdateUserName(ctx.Member, score);
-                response += $"{Environment.NewLine}I updated your name as well";
+                newDisplayName = await UpdateUserName(ctx.Member, score);
+                if (!ctx.Member.DisplayName.Equals(newDisplayName, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    response += $"{Environment.NewLine}I updated your name as well";
+                }
             }
             catch (Exception ex)
             {
@@ -173,12 +180,12 @@ namespace PuttPutt.Commands
                 var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
                 var data = new Participant()
                 {
-                    Id = string.IsNullOrWhiteSpace(priorData.Id) ? string.Empty : priorData.Id,
+                    Id = string.IsNullOrWhiteSpace(priorData?.Id) ? string.Empty : priorData.Id,
                     ServerId = ctx.Guild.Id,
                     UserId = ctx.Member.Id,
                     DisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? ctx.Member.DisplayName : newDisplayName,
                     Score = score,
-                    EventHistory = (priorData.EventHistory == null) ? new() : priorData.EventHistory
+                    EventHistory = (priorData?.EventHistory == null) ? new() : priorData.EventHistory
                 };
 
                 data.EventHistory.Add(new()
@@ -196,13 +203,14 @@ namespace PuttPutt.Commands
             catch (Exception ex)
             {
                 response = $"Oops, something went wrong: {ex.Message}";
-            }        
+            }
 
             await ctx.RespondAsync(response);
         }
 
-        private async Task UpdateUserName(DiscordMember member, int score)
+        private async Task<string> UpdateUserName(DiscordMember member, int score)
         {
+            string displayName = member.DisplayName;
             var newDisplayName = UsernameUtilities.UpdateUsernameScore(member.DisplayName, score);
 
             if (!newDisplayName.Equals(member.DisplayName))
@@ -212,7 +220,11 @@ namespace PuttPutt.Commands
                     x.Nickname = newDisplayName;
                     x.AuditLogReason = $"Changed by PuttPutt, new score";
                 });
+
+                displayName = newDisplayName;
             }
+
+            return displayName;
         }
     }
 }
