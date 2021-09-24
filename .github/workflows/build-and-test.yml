@@ -77,4 +77,5 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"DanWillman_PuttPutt" /o:"danwillman" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet restore
           dotnet build --configuration Release --no-restore
+          dotnet test --collect:"XPlat Code Coverage" --CoverletOutputFormat=opencover --no-restore --verbosity normal -r TestResults
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
