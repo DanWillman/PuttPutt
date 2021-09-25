@@ -25,15 +25,5 @@ namespace PuttPutt.Models
         public Member()
         {
         }
-
-        /// <summary>
-        /// Convert from DSharp single member
-        /// </summary>
-        /// <param name="member"></param>
-        public Member(DiscordMember member)
-        {
-            Id = member.Id;
-            DisplayName = member.DisplayName;
-        }
     }
 }
