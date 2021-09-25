@@ -219,7 +219,7 @@ namespace UnitTests.Services
             var mock = new AutoMocker();
             var service = mock.CreateInstance<AdminCommandService>();
 
-            service.UpdateUsername(participant, "potato");
+            Assert.DoesNotThrow(() => service.UpdateUsername(participant, "potato"));
         }
 
         private List<ulong> RandomULong(int count = 1)
@@ -233,7 +233,7 @@ namespace UnitTests.Services
             return result;
         }
 
-        private List<string> RandomDisplayNames()
+        private static List<string> RandomDisplayNames()
         {
             return new List<string>{
                 "Dan [-52]",

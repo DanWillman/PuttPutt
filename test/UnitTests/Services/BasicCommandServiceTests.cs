@@ -138,20 +138,7 @@ namespace UnitTests.Services
             return result;
         }
 
-        private List<string> RandomDisplayNames()
-        {
-            return new List<string>{
-                "Dan [-52]",
-                "Dan [52]",
-                "Dan (He/Him) [-52]",
-                "Dan {-52}",
-                "Dan {52}",
-                "Dan (-52)",
-                "Dan"
-            };
-        }
-
-        private List<Event> RandomEvents(int limit)
+        private static List<Event> RandomEvents(int limit)
         {
             List<Event> results = new List<Event>();
             Random rand = new Random();
