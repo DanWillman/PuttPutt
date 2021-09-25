@@ -109,7 +109,7 @@ namespace UnitTests.Services
             mock.GetMock<IMongoDataAccess>()
                 .SetupSequence(x => x.UpsertParticipant(It.IsAny<Participant>()))
                 .Returns((participant, null))
-                .Throws(new ArgumentException("Potato"));
+                .Throws(new ArgumentNullException("Potato"));
 
             var adminService = mock.CreateInstance<AdminCommandService>();
 
@@ -201,7 +201,7 @@ namespace UnitTests.Services
             mock.GetMock<IMongoDataAccess>()
                 .SetupSequence(x => x.UpsertParticipant(It.IsAny<Participant>()))
                 .Returns((participant, null))
-                .Throws(new ArgumentException("Potato"));
+                .Throws(new ArgumentNullException("Potato"));
             mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
 
             var adminService = mock.CreateInstance<AdminCommandService>();
