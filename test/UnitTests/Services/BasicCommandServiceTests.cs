@@ -104,6 +104,7 @@ namespace UnitTests.Services
             }
         }
 
+        [TestCase(-1)]
         [TestCase(1)]
         [TestCase(10)]
         [TestCase(14)]
@@ -111,7 +112,8 @@ namespace UnitTests.Services
         {
             var events = RandomEvents(25);
             var participant = new Participant() { EventHistory = events };
-            var eventsSortedLimited = participant.EventHistory.OrderBy(e => e.EventTimeUTC).ToList().GetRange(0, limit);
+            var eventsSortedLimited = participant.EventHistory.OrderBy(e => e.EventTimeUTC).ToList().GetRange(0, limit > -1 ? limit 
+                                                                                                    : participant.EventHistory.Count);
             var mock = new AutoMocker();
 
             mock.GetMock<IMongoDataAccess>().Setup(m => m.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
@@ -124,6 +126,108 @@ namespace UnitTests.Services
                 Assert.IsTrue(actual.Exists(a => a.Contains(e.EventTimeUTC.ToShortDateString())
                                                         && a.Contains(e.EventTimeUTC.ToShortTimeString())));
             }
+        }
+
+        [Test]
+        public void ReportArchiveScoreboard_HappyPath_ReturnsExpectedStrings()
+        {
+            var mock = new AutoMocker();
+            var participants = A.ListOf<Participant>();
+            var archive = A.New<Archive>();
+
+            archive.Participant = participants;
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.GetArchive(It.IsAny<ulong>(), It.IsAny<string>())).Returns(archive);
+
+            var service = mock.CreateInstance<BasicCommandService>();
+
+            var actual = service.ReportArchiveScoreboard(RandomULong(1)[0], "test", null);
+
+            foreach (var p in participants)
+            {
+                Assert.IsTrue(actual.Exists(a => a.Contains(p.DisplayName)));
+            }
+        }
+
+        [Test]
+        public void SetUserScore_HappyPath_ReturnsHappyString()
+        {
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
+
+            var service = mock.CreateInstance<BasicCommandService>();
+
+            var actual = service.SetUserScore(1, 2, 3, "test");
+
+            Assert.AreEqual(string.Empty, actual);
+        }
+
+        [Test]
+        public void SetUserScore_EncounteredException_ReturnsExceptionMessage()
+        {
+            var mock = new AutoMocker();
+            var expected = "Test Exception";
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Throws(new Exception(expected));
+
+            var service = mock.CreateInstance<BasicCommandService>();
+
+            var actual = service.SetUserScore(1, 2, 3, "test");
+
+            Assert.IsTrue(actual.Contains(expected));
+        }
+
+        [TestCase(3)]
+        [TestCase(-3)]
+        public void UpdateUserScore_HappyPath_ReturnsExpectedStringAndScore(int modifier)
+        {
+            var mock = new AutoMocker();
+            var participant = A.New<Participant>();
+            var originalScore = participant.Score;
+            var updatedParticipant = new Participant
+            {
+                Score = originalScore + modifier
+            };
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.GetParticipantInfo(It.IsAny<ulong>(), It.IsAny<ulong>())).Returns(participant);
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.UpsertParticipant(It.IsAny<Participant>())).Returns((updatedParticipant, null));
+
+            var service = mock.CreateInstance<BasicCommandService>();
+
+            var actual = service.UpdateUserScore(1, 2, modifier, "Potato");
+
+            string expected = $"Ok, I've updated your score from {originalScore} to {actual.Score}";
+            Assert.AreEqual(expected, actual.Response);
+            Assert.AreEqual(updatedParticipant.Score, actual.Score);
+        }
+
+        [TestCase("Dan [-52]", -52, 5)]
+        [TestCase("Dan [52]", 52, 5)]
+        [TestCase("Dan (He/Him) [-52]", -52, 7)]
+        [TestCase("Dan {-52}", -52, 3)]
+        [TestCase("Dan {52}", 52, -5)]
+        [TestCase("Dan (-52)", -52, -9)]
+        [TestCase("Dan", 0, -2)]
+        public void UpdateUserScore_NotInDatabase_CreatesRecord(string name, int score, int modifier)
+        {
+            var mock = new AutoMocker();
+            var updatedParticipant = new Participant
+            {
+                Score = score + modifier
+            };
+
+            mock.GetMock<IMongoDataAccess>().Setup(x => x.UpsertParticipant(It.IsAny<Participant>())).Returns((updatedParticipant, null));
+
+            var service = mock.CreateInstance<BasicCommandService>();
+
+            var actual = service.UpdateUserScore(1, 2, modifier, name);
+
+            string expectedStartString = $" I couldn't find you in my records, so I started you at {score} and you're now at {actual.Score}";
+
+            Assert.IsTrue(actual.Response.Contains(expectedStartString));
+            Assert.AreEqual(updatedParticipant.Score, actual.Score);
         }
 
         private List<ulong> RandomULong(int count = 1)
