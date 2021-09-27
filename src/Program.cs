@@ -25,7 +25,7 @@ namespace PuttPutt
         static async Task Main(string[] args)
         {
             using IHost host = CreateHostBuilder(args).Build();
-            await new Program().InitBot(args);
+            await new Program().InitBot(args, host.Services);
         }
 
         static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -35,7 +35,7 @@ namespace PuttPutt
                             .AddTransient<IBasicCommandService, BasicCommandService>()
                             .AddSingleton<IMongoDataAccess, MongoDataAccess>());
 
-        async Task InitBot(string[] args)
+        async Task InitBot(string[] args, IServiceProvider deps)
         {
             cts = new CancellationTokenSource();
             var json = "";
@@ -63,7 +63,8 @@ namespace PuttPutt
             {
                 StringPrefixes = new[] {"!"},
                 EnableDms = true,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Services = deps
             };
 
             commands = client.UseCommandsNext(commandsConfig);
