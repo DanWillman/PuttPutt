@@ -86,63 +86,23 @@ namespace PuttPutt.Commands
             [Description("Amount to modify current score")] int modifier,
             [RemainingText, Description("Optional reason for what you did, displayed in history")] string reason = "")
         {
-            var data = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
-            var response = "";
+            string response = string.Empty;
+            string displayName = string.Empty;
+            int score = 0;
 
-            if (data == null)
-            {
-                string displayName = string.Empty;
-                int score = 0;
-                try
-                {
-                    displayName = UsernameUtilities.SanitizeUsername(ctx.Member.DisplayName);
-                    score = UsernameUtilities.GetScore(ctx.Member.DisplayName);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Unable to parse score from name: {ctx.Member.DisplayName} {Environment.NewLine} {ex.Message} {Environment.NewLine} {ex.StackTrace}");
-                }
-
-                data = new Participant()
-                {
-                    ServerId = ctx.Guild.Id,
-                    UserId = ctx.Member.Id,
-                    DisplayName = string.IsNullOrWhiteSpace(displayName) ? ctx.Member.DisplayName : displayName,
-                    Score = score,
-                    EventHistory = new List<Event>()
-                };
-
-                response += $" I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
-            }
-            else if (data.EventHistory == null)
-            {
-                data.EventHistory = new List<Event>();
-            }
-
-            data.EventHistory.Add(new Event()
-            {
-                Id = ObjectId.GenerateNewId().ToString(),
-                EventTimeUTC = DateTime.UtcNow,
-                ScoreModifier = modifier,
-                PriorScore = data.Score,
-                ScoreSnapshot = data.Score + modifier,
-                Notes = reason
-            });
-
-            int originalScore = data.Score;
-            data.Score += modifier;
-
-            (Participant updatedData, var result) = mongo.UpsertParticipant(data);
-
-            response = string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response;
-
+            (response, score) = string.IsNullOrWhiteSpace(reason) ? commandService.UpdateUserScore(ctx.Guild.Id, ctx.User.Id, modifier, ctx.Member.DisplayName)
+                                : commandService.UpdateUserScore(ctx.Guild.Id, ctx.User.Id, modifier, displayName, reason);
+            
             try
             {
-                var newName = await UpdateUserName(ctx.Member, data.Score);
-
-                if (!ctx.Member.DisplayName.Equals(newName, StringComparison.InvariantCultureIgnoreCase))
+                if (!ctx.Member.IsOwner) //Nobody can change an owner's nickname
                 {
-                    response += $"{Environment.NewLine}I updated your name as well";
+                    var newName = await UpdateUserName(ctx.Member, score);
+
+                    if (!ctx.Member.DisplayName.Equals(newName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        response += $"{Environment.NewLine}I updated your name as well";
+                    }
                 }
             }
             catch (Exception ex)
@@ -164,46 +124,25 @@ namespace PuttPutt.Commands
             string newDisplayName = string.Empty;
             try
             {
-                newDisplayName = await UpdateUserName(ctx.Member, score);
-                if (!ctx.Member.DisplayName.Equals(newDisplayName, StringComparison.InvariantCultureIgnoreCase))
+                if (!ctx.Member.IsOwner)
                 {
-                    response += $"{Environment.NewLine}I updated your name as well";
-                }
+                    newDisplayName = await UpdateUserName(ctx.Member, score);
+                    if (!ctx.Member.DisplayName.Equals(newDisplayName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        response += $"{Environment.NewLine}I updated your name as well";
+                    }
+                }                
             }
             catch (Exception ex)
             {
                 response += $"{Environment.NewLine}I tried to update your display name, but something went wrong: {ex.Message}";
             }
 
-            try
-            {
-                var priorData = mongo.GetParticipantInfo(ctx.User.Id, ctx.Guild.Id);
-                var data = new Participant()
-                {
-                    Id = string.IsNullOrWhiteSpace(priorData?.Id) ? string.Empty : priorData.Id,
-                    ServerId = ctx.Guild.Id,
-                    UserId = ctx.Member.Id,
-                    DisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? ctx.Member.DisplayName : newDisplayName,
-                    Score = score,
-                    EventHistory = (priorData?.EventHistory == null) ? new() : priorData.EventHistory
-                };
+            newDisplayName = string.IsNullOrWhiteSpace(newDisplayName) ? ctx.Member.DisplayName : newDisplayName;
 
-                data.EventHistory.Add(new()
-                {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    EventTimeUTC = DateTime.UtcNow,
-                    ScoreModifier = 0,
-                    ScoreSnapshot = score,
-                    Notes = reason,
-                    PriorScore = (priorData == null) ? 0 : priorData.Score
-                });
-
-                mongo.UpsertParticipant(data);
-            }
-            catch (Exception ex)
-            {
-                response = $"Oops, something went wrong: {ex.Message}";
-            }
+            response += string.IsNullOrWhiteSpace(reason) ? commandService.SetUserScore(ctx.Guild.Id, ctx.User.Id, score, newDisplayName)
+                                    : commandService.SetUserScore(ctx.Guild.Id, ctx.User.Id, score, newDisplayName, reason);
+                        
 
             await ctx.RespondAsync(response);
         }

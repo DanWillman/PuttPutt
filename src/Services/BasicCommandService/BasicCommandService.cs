@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.Entities;
+using MongoDB.Bson;
 using PuttPutt.DataAccess;
+using PuttPutt.Models;
 using PuttPutt.Utilities;
 using System;
 using System.Collections.Generic;
@@ -75,24 +77,105 @@ namespace PuttPutt.Services.BasicCommandService
             return response;
         }
 
-        public Task<string> SetUserScore(ulong serverId, ulong userId, int score)
+        public string SetUserScore(ulong serverId, ulong userId, int score, string displayName)
         {
-            throw new NotImplementedException();
+            return SetUserScore(serverId, userId, score, displayName, string.Empty);
         }
 
-        public Task<string> SetUserScore(ulong serverId, ulong userId, int score, string note)
+        public string SetUserScore(ulong serverId, ulong userId, int score, string displayName, string note)
         {
-            throw new NotImplementedException();
+            string response = string.Empty;
+
+            try
+            {
+                var priorData = mongo.GetParticipantInfo(userId, serverId);
+                var data = new Participant()
+                {
+                    Id = string.IsNullOrWhiteSpace(priorData?.Id) ? string.Empty : priorData.Id,
+                    ServerId = serverId,
+                    UserId = userId,
+                    DisplayName = displayName,
+                    Score = score,
+                    EventHistory = (priorData?.EventHistory == null) ? new() : priorData.EventHistory
+                };
+
+                data.EventHistory.Add(new()
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    EventTimeUTC = DateTime.UtcNow,
+                    ScoreModifier = 0,
+                    ScoreSnapshot = score,
+                    Notes = note,
+                    PriorScore = (priorData == null) ? 0 : priorData.Score
+                });
+
+                mongo.UpsertParticipant(data);
+            }
+            catch (Exception ex)
+            {
+                response = $"Oops, something went wrong: {ex.Message}";
+            }
+
+            return response;
         }
 
-        public Task<string> UpdateUserScore(ulong serverId, ulong userId, int modifier)
+        public (string Response, int Score) UpdateUserScore(ulong serverId, ulong userId, int modifier, string displayName)
         {
-            throw new NotImplementedException();
+            return UpdateUserScore(serverId, userId, modifier, displayName, string.Empty);
         }
 
-        public Task<string> UpdateUserScore(ulong serverId, ulong userId, int modifier, string note)
+        public (string Response, int Score) UpdateUserScore(ulong serverId, ulong userId, int modifier, string displayName, string note)
         {
-            throw new NotImplementedException();
+            string response = string.Empty;
+            string newName = string.Empty;
+            var data = mongo.GetParticipantInfo(userId, serverId);
+            int score = 0;
+
+            try
+            {
+                newName = UsernameUtilities.SanitizeUsername(displayName);
+                score = UsernameUtilities.GetScore(displayName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unable to parse score from name: {displayName} {Environment.NewLine} {ex.Message} {Environment.NewLine} {ex.StackTrace}");
+            }
+
+            if (data == null)
+            {
+                data = new Participant()
+                {
+                    ServerId = serverId,
+                    UserId = userId,
+                    DisplayName = newName,
+                    Score = score,
+                    EventHistory = new List<Event>()
+                };
+
+                response += $" I couldn't find you in my records, so I started you at {data.Score} and you're now at {data.Score + modifier}";
+            }
+            else if (data.EventHistory == null)
+            {
+                data.EventHistory = new List<Event>();
+            }
+
+            data.EventHistory.Add(new Event()
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                EventTimeUTC = DateTime.UtcNow,
+                ScoreModifier = modifier,
+                PriorScore = data.Score,
+                ScoreSnapshot = data.Score + modifier,
+                Notes = note
+            });
+
+            int originalScore = data.Score;
+            data.Score += modifier;
+
+            (Participant updatedData, var result) = mongo.UpsertParticipant(data);
+
+            return (string.IsNullOrWhiteSpace(response) ? $"Ok, I've updated your score from {originalScore} to {updatedData.Score}" : response,
+                    data.Score);
         }
     }
 }
