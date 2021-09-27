@@ -54,7 +54,7 @@ namespace PuttPutt.DataAccess
 
         public List<string> GetArchivalNames(ulong serverId) => archiveCollection.Find(x => x.ServerId == serverId).ToList().Select(a => a.ArchiveName).Distinct().ToList();
 
-        public Archive GetArchive(DiscordGuild server, string archiveName) => archiveCollection.Find(x => x.ServerId == server.Id && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
+        public Archive GetArchive(ulong serverId, string archiveName) => archiveCollection.Find(x => x.ServerId == serverId && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
 
         public void ArchiveSeason(ulong serverId, string archiveName)
         {

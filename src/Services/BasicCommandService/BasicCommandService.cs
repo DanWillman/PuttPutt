@@ -26,9 +26,11 @@ namespace PuttPutt.Services.BasicCommandService
             return string.Join(", ", mongo.GetArchivalNames(serverId));
         }
 
-        public Task<string> ReportArchiveScoreboard(ulong serverId, string archiveName)
+        public List<string> ReportArchiveScoreboard(ulong serverId, string archiveName, DiscordEmoji headerEmoji)
         {
-            throw new NotImplementedException();
+            var results = mongo.GetArchive(serverId, archiveName).Participant;
+
+            return FormatScoreboardMessage(results, -1, headerEmoji);
         }
 
         public List<string> ReportHistory(ulong serverId, ulong userId)
@@ -61,15 +63,21 @@ namespace PuttPutt.Services.BasicCommandService
 
         public List<string> ReportScoreboard(ulong serverId, int limit, DiscordEmoji headerEmoji)
         {
-            var response = new List<string>();
             var results = mongo.GetParticipants(serverId).OrderBy(p => p.Score).ToList();
 
-            if (limit != -1 && results.Count > limit)
+            return FormatScoreboardMessage(results, limit, headerEmoji);
+        }
+
+        private List<string> FormatScoreboardMessage(List<Participant> scores, int limit, DiscordEmoji headerEmoji)
+        {
+            var response = new List<string>();
+
+            if (limit != -1 && scores.Count > limit)
             {
-                results = results.GetRange(0, limit);
+                scores = scores.GetRange(0, limit);
             }
 
-            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, headerEmoji))
+            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(scores, headerEmoji))
             {
                 MessageFormatter.AddOrExtendDiscordStrings(response, message);
             }

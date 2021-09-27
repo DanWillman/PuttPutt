@@ -49,10 +49,10 @@ namespace PuttPutt.Commands
         [Description(@"Displays a scoreboard for a previous season. Example: `!seasonscores ""Summer2021""`")]
         public async Task ReportOldScoreboard(CommandContext ctx, [RemainingText] string archive)
         {
-            var results = mongo.GetArchive(ctx.Guild, archive).Participant;
             var golferEmoji = DiscordEmoji.FromName(ctx.Client, ":golfer:");
+            var messageStrings = commandService.ReportArchiveScoreboard(ctx.Guild.Id, archive, golferEmoji);
 
-            foreach (string message in MessageFormatter.FormatGolfersToDiscordMessage(results, golferEmoji, $"{archive} results!"))
+            foreach (string message in messageStrings)
             {
                 await ctx.RespondAsync(message);
             }

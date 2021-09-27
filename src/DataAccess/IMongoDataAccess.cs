@@ -27,10 +27,10 @@ namespace PuttPutt.DataAccess
         /// <summary>
         /// Gets the archival entry for the specified server and name
         /// </summary>
-        /// <param name="server"></param>
+        /// <param name="serverId"></param>
         /// <param name="archiveName"></param>
         /// <returns></returns>
-        Archive GetArchive(DiscordGuild server, string archiveName);
+        Archive GetArchive(ulong serverId, string archiveName);
 
         /// <summary>
         /// Get participant info for a specified user/server combination
