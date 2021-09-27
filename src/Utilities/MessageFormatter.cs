@@ -145,6 +145,16 @@ namespace PuttPutt.Utilities
             }
             addition += Environment.NewLine;
 
+            AddOrExtendDiscordStrings(messages, addition);
+        }
+
+        /// <summary>
+        /// Paginates a string into a list to fit in a discord message
+        /// </summary>
+        /// <param name="messages">List of message strings currently being sent. Additions will be added to the last value, or appended to the list</param>
+        /// <param name="addition">New string being added</param>
+        public static void AddOrExtendDiscordStrings(List<string> messages, string addition)
+        {
             if (messages.Count == 0)
             {
                 messages.Add(addition);

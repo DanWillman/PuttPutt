@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.EventArgs;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using PuttPutt.Commands;
+using PuttPutt.DataAccess;
+using PuttPutt.Services.AdminCommandService;
+using PuttPutt.Services.BasicCommandService;
 
 namespace PuttPutt
 {
@@ -17,9 +22,20 @@ namespace PuttPutt
         private DiscordClient client;
         private CommandsNextExtension commands;
 
-        static async Task Main(string[] args) => await new Program().InitBot(args);
+        static async Task Main(string[] args)
+        {
+            using IHost host = CreateHostBuilder(args).Build();
+            await new Program().InitBot(args, host.Services);
+        }
 
-        async Task InitBot(string[] args)
+        static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureServices((_, services) =>
+                    services.AddTransient<IAdminCommandService, AdminCommandService>()
+                            .AddTransient<IBasicCommandService, BasicCommandService>()
+                            .AddSingleton<IMongoDataAccess, MongoDataAccess>());
+
+        async Task InitBot(string[] args, IServiceProvider deps)
         {
             cts = new CancellationTokenSource();
             var json = "";
@@ -47,7 +63,8 @@ namespace PuttPutt
             {
                 StringPrefixes = new[] {"!"},
                 EnableDms = true,
-                EnableMentionPrefix = true
+                EnableMentionPrefix = true,
+                Services = deps
             };
 
             commands = client.UseCommandsNext(commandsConfig);

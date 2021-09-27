@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DSharpPlus.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
@@ -9,10 +8,8 @@ using PuttPutt.Models;
 
 namespace PuttPutt.DataAccess
 {
-    /// <summary>
-    /// Provides access to underlying data store in Mongo
-    /// </summary>
-    public class MongoDataAccess
+    /// <inheritdoc/>
+    public class MongoDataAccess : IMongoDataAccess
     {
         private readonly string ParticipantCollectionName = "scores";
         private readonly string ArchiveCollectionName = "archive";
@@ -22,6 +19,9 @@ namespace PuttPutt.DataAccess
         private readonly IMongoCollection<Participant> particpantCollection;
         private readonly IMongoCollection<Archive> archiveCollection;
 
+        /// <summary>
+        /// IoC constructor
+        /// </summary>
         public MongoDataAccess()
         {
             var client = new MongoClient(ConnectionString);
@@ -34,35 +34,42 @@ namespace PuttPutt.DataAccess
             archiveCollection.Indexes.CreateOne(new CreateIndexModel<Archive>(Builders<Archive>.IndexKeys.Ascending(x => x.Id)));
         }
 
-        /// <summary>
-        /// Returns an unsorted list of all particpant entries for a specified server
-        /// </summary>
-        public List<Participant> GetParticipants(DiscordGuild server) => particpantCollection.Find(x => x.ServerId == server.Id).ToList();
+        public List<Participant> GetParticipants(ulong serverId) => particpantCollection.Find(x => x.ServerId == serverId).ToList();
 
-        /// <summary>
-        /// Get participant info for a specified user/server combination
-        /// </summary>
-        /// <param name="user">DiscordUser being searched for</param>
-        /// <param name="server">DiscordGuild (server) tied to record</param>
-        /// <returns></returns>
-        public Participant GetParticipantInfo(DiscordUser user, DiscordGuild server) =>
-            particpantCollection.Find(x => x.UserId == user.Id && x.ServerId == server.Id).FirstOrDefault();
+        public Participant GetParticipantInfo(ulong userId, ulong serverId) =>
+            particpantCollection.Find(x => x.UserId == userId && x.ServerId == serverId).FirstOrDefault();
 
-        /// <summary>
-        /// Updates the participant info, inserting if missing.
-        /// <para/>
-        /// Returns updated participant value
-        /// </summary>
-        public Participant UpsertParticipant(Participant participant)
+        public (Participant, ReplaceOneResult) UpsertParticipant(Participant participant)
         {
             if(string.IsNullOrWhiteSpace(participant.Id))
             {
                 participant.Id = ObjectId.GenerateNewId().ToString();
             }
 
-            particpantCollection.ReplaceOne(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId, participant, new ReplaceOptions() { IsUpsert = true });
+            var result = particpantCollection.ReplaceOne(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId, participant, new ReplaceOptions() { IsUpsert = true });
 
-            return GetParticipantInfo(participant);
+            return (GetParticipantInfo(participant), result);
+        }
+
+        public List<string> GetArchivalNames(ulong serverId) => archiveCollection.Find(x => x.ServerId == serverId).ToList().Select(a => a.ArchiveName).Distinct().ToList();
+
+        public Archive GetArchive(ulong serverId, string archiveName) => archiveCollection.Find(x => x.ServerId == serverId && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
+
+        public void ArchiveSeason(ulong serverId, string archiveName)
+        {
+            var archive = new Archive()
+            {
+                ArchiveName = archiveName,
+                Id = ObjectId.GenerateNewId().ToString(),
+                ServerId = serverId,
+                Participant = GetParticipants(serverId)
+            };
+
+            Console.WriteLine($"Archiving season. {JsonConvert.SerializeObject(archive)}");
+
+            archiveCollection.InsertOne(archive);
+
+            particpantCollection.DeleteMany(x => x.ServerId == serverId);
         }
 
         /// <summary>
@@ -70,42 +77,5 @@ namespace PuttPutt.DataAccess
         /// </summary>
         private Participant GetParticipantInfo(Participant participant) =>
             particpantCollection.Find(x => x.UserId == participant.UserId && x.ServerId == participant.ServerId).FirstOrDefault();
-
-        /// <summary>
-        /// Gets all archive names from the specified server
-        /// </summary>
-        /// <param name="server"></param>
-        /// <returns></returns>
-        public List<string> GetArchivalNames(DiscordGuild server) => archiveCollection.Find(x => x.ServerId == server.Id).ToList().Select(a => a.ArchiveName).Distinct().ToList();
-
-        /// <summary>
-        /// Gets the archival entry for the specified server and name
-        /// </summary>
-        /// <param name="server"></param>
-        /// <param name="archiveName"></param>
-        /// <returns></returns>
-        public Archive GetArchive(DiscordGuild server, string archiveName) => archiveCollection.Find(x => x.ServerId == server.Id && x.ArchiveName.Equals(archiveName)).FirstOrDefault();
-
-        /// <summary>
-        /// Moves records from current 
-        /// </summary>
-        /// <param name="server">Discord server for season</param>
-        /// <param name="archiveName">Archival name given to season</param>
-        public void ArchiveSeason(DiscordGuild server, string archiveName)
-        {
-            var archive = new Archive()
-            {
-                ArchiveName = archiveName,
-                Id = ObjectId.GenerateNewId().ToString(),
-                ServerId = server.Id,
-                Participant = GetParticipants(server)
-            };
-
-            System.Console.WriteLine($"Archiving season. {JsonConvert.SerializeObject(archive)}");
-
-            archiveCollection.InsertOne(archive);
-
-            particpantCollection.DeleteMany(x => x.ServerId == server.Id);
-        }
     }
 }
