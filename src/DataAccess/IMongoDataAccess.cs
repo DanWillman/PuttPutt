@@ -1,5 +1,4 @@
-﻿using DSharpPlus.Entities;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using PuttPutt.Models;
 using System.Collections.Generic;
 

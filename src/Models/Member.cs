@@ -1,8 +1,4 @@
-﻿using DSharpPlus.Entities;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace PuttPutt.Models
+﻿namespace PuttPutt.Models
 {
     /// <summary>
     /// Wrapper model for DSharpDiscordMember
