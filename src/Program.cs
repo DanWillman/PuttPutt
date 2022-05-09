@@ -79,6 +79,7 @@ namespace PuttPutt
         private async Task Client_ClientErrored(DiscordClient client, ClientErrorEventArgs e)
         {
             Console.WriteLine($"Exception occured: {e.Exception.Message}");
+            Environment.Exit(69);
             await Task.CompletedTask;
         }
 
