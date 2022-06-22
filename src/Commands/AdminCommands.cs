@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace PuttPutt.Commands
 {
     [RequireRoles(RoleCheckMode.Any, new string[] { "modz", "Queen of Hell" })]
-    //[RequireRoles(RoleCheckMode.Any, new string[] { "testing"})]
     class AdminCommands : BaseCommandModule
     {
         private MongoDataAccess mongo = new MongoDataAccess();
