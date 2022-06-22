@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
 using PuttPutt.Commands;
@@ -92,6 +94,11 @@ namespace PuttPutt
         private async Task Commands_CommandErrored(CommandsNextExtension cne, CommandErrorEventArgs e)
         {
             Console.WriteLine($"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            if (e.Exception.GetType() == typeof(ChecksFailedException))
+            {
+                var ex = (ChecksFailedException)e.Exception;
+                System.Console.WriteLine($"Failed checks: {string.Join(", ", ex.FailedChecks)}");
+            }
             await Task.CompletedTask;
         }
     }
