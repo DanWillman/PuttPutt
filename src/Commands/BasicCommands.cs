@@ -142,7 +142,7 @@ namespace PuttPutt.Commands
 
             try
             {
-                var newName = await UpdateUserName(ctx.Member, data.Score);
+                var newName = await UsernameUtilities.UpdateUserName(ctx.Member, data.Score);
 
                 if (!ctx.Member.DisplayName.Equals(newName, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -168,7 +168,7 @@ namespace PuttPutt.Commands
             string newDisplayName = string.Empty;
             try
             {
-                newDisplayName = await UpdateUserName(ctx.Member, score);
+                newDisplayName = await UsernameUtilities.UpdateUserName(ctx.Member, score);
                 if (!ctx.Member.DisplayName.Equals(newDisplayName, StringComparison.InvariantCultureIgnoreCase))
                 {
                     response += $"{Environment.NewLine}I updated your name as well";
@@ -210,25 +210,6 @@ namespace PuttPutt.Commands
             }
 
             await ctx.RespondAsync(response);
-        }
-
-        private async Task<string> UpdateUserName(DiscordMember member, int score)
-        {
-            string displayName = member.DisplayName;
-            var newDisplayName = UsernameUtilities.UpdateUsernameScore(member.DisplayName, score);
-
-            if (!newDisplayName.Equals(member.DisplayName))
-            {
-                await member.ModifyAsync(x =>
-                {
-                    x.Nickname = newDisplayName;
-                    x.AuditLogReason = $"Changed by PuttPutt, new score";
-                });
-
-                displayName = newDisplayName;
-            }
-
-            return displayName;
         }
     }
 }

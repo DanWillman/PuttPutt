@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using DSharpPlus.Entities;
 
 namespace PuttPutt.Utilities
 {
@@ -47,6 +49,25 @@ namespace PuttPutt.Utilities
             }
 
             return source.Trim();
+        }
+        
+        public static async Task<string> UpdateUserName(DiscordMember member, int score)
+        {
+            string displayName = member.DisplayName;
+            var newDisplayName = UpdateUsernameScore(member.DisplayName, score);
+
+            if (!newDisplayName.Equals(member.DisplayName))
+            {
+                await member.ModifyAsync(x =>
+                {
+                    x.Nickname = newDisplayName;
+                    x.AuditLogReason = $"Changed by PuttPutt, new score";
+                });
+
+                displayName = newDisplayName;
+            }
+
+            return displayName;
         }
     }
 }

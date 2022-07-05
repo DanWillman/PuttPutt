@@ -90,6 +90,9 @@ namespace PuttPutt.Commands
                     };
 
                     mongo.UpsertParticipant(scoreInfo);
+
+                    await UsernameUtilities.UpdateUserName(member, 0);
+                    
                     success++;
                 }
                 catch (ArgumentNullException)
