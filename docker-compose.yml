@@ -8,7 +8,7 @@ services:
       - PGID=1000
       - TZ=America/Chicago
     volumes:
-      - /mnt/nvme/mongo/database/puttputt:/data/db
+      - /home/mongo/puttputt:/data/db
     ports:
       - 27018:27017
     restart: unless-stopped
