@@ -71,7 +71,7 @@ namespace PuttPutt.Commands
         [Description("Reports calling user's score history. Optionally can limit results. Example: `!history` or `!history 5`")]
         public async Task ReportHistory(CommandContext ctx, int limit = -1)
         {
-            var events = mongo.GetParticipantInfo(ctx.User, ctx.Guild).EventHistory.OrderBy(e => e.EventTimeUTC).ToList();
+            var events = mongo.GetParticipantInfo(ctx.User, ctx.Guild).EventHistory.OrderByDescending(e => e.EventTimeUTC).ToList();
 
             if (limit != -1 && events.Count > limit)
             {
