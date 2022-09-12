@@ -17,6 +17,8 @@ A discord bot for mini painting shame golf
 * `!archives` Gets a list of all archive names, allowing the user to then pull up a scoreboard for that season
 * `!seasonscores [archive]` Displays the scoreboard for the specified archive (season) name. Hint: use `!archives` to get the list, or check out [shame.golf](shame.golf)
   *  Example: `!seasonscores Summer2021`
+* `!seasonhistory [limit]|{0} [archive]` Displays the user history for a given season, and limits the results if the limit constraint is not 0. Hint: use `!archives` to get the list, or check out [shame.golf](shame.golf)
+  *  Example: `!seasonscores 0 Summer2021`, `!seasonscores 5 Summer2021`
 * `!myscore` Reports your current score
 ## Mod commands
 * `!sync` Overwrites the database with values from usernames in the server. Currently, this pulls scores in a format of `[15]` or `{15}`, including negative scores. 

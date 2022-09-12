@@ -58,6 +58,33 @@ namespace PuttPutt.Commands
             }
         }
 
+        [Command("seasonhistory")]
+        [Description(@"Displays your history for a previous season, limited by provided count, or unlimited by providing 0.
+                Example: `!seasonhistory 10 ""Summer2021""`")]
+        public async Task SeasonHistoryUser(CommandContext ctx, int limit, [RemainingText]string archive)
+        {
+            var results = mongo.GetArchive(ctx.Guild, archive)
+                .Participant.FirstOrDefault(p => p.UserId == ctx.User.Id && p.ServerId == ctx.Guild.Id)
+                ?.EventHistory.OrderByDescending(e => e.EventTimeUTC).ToList();
+
+            if (results == null || results.Count == 0)
+            {
+                await ctx.RespondAsync($"I couldn't find you for the season `{archive}`. " +
+                                       "Double check the season name using `!archives` and try again");
+                return;
+            }
+
+            if (limit > 0 && results.Count > limit)
+            {
+                results = results.GetRange(0, limit);
+            }
+            
+            foreach (string message in MessageFormatter.FormatHistoryToDiscordMessage(results))
+            {
+                await ctx.RespondAsync(message);
+            }
+        }
+
         [Command("myscore")]
         [Description("Reports calling user's current score")]
         public async Task ReportScore(CommandContext ctx)
