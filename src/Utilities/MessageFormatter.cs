@@ -96,7 +96,7 @@ namespace PuttPutt.Utilities
             sb.AppendLine($"{PadToMaxWidth("Timestamp", "Modification")}");
             sb.AppendLine($"{LINE_BREAK}");
 
-            var orderedEvents = events.OrderBy(e => e.EventTimeUTC).ToList();
+            var orderedEvents = events.OrderByDescending(e => e.EventTimeUTC).ToList();
 
             foreach (var e in orderedEvents)
             {
